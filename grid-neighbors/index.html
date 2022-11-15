@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700;900&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:ital,wght@0,300;0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <title>OVERLAY</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/7.3.0/rxjs.umd.min.js" integrity="sha512-y3JTS47nnpKORJX8Jn1Rlm+QgRIIZHtu3hWxal0e81avPrqUH48yk+aCi+gprT0RMAcpYa0WCkapxe+bpBHD6g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+
+  <div class="gradient" id="app-shell">
+    <header id="app-header">
+      <div id="app-header-left"></div>
+      <div id="app-header-center">
+        <h2>Grid Neighbors</h2>
+      </div>
+      <div id="app-header-right"></div>
+    </header>
+    <div class="gradient" id="app">
+      <section id="app-body">
+        <div class="container">
+          <div id="grid-container"></div>
+          <!-- <div id="overlay-grid"></div> -->
+        </div>
+      </section>
+    </div>
+    <footer id="app-footer">
+      <div id="controls" class="container">
+        <button class="move-button app-button" data-direction="left">
+          <svg class="arrow-left" width="32" height="32" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <g class="icon">
+              <path class="icon-path" d=" M 4.1544,32.0152 18.0699,22.3889 31.9853,12.7626 31.9927,32 32,51.2374 18.0772,41.6263 4.1544,32.0152 Z M 59.8456,24.2749 59.8456,39.7251 32,39.7251 32,24.2749 59.8456,24.2749 Z" />
+            </g>
+          </svg>
+        </button>
+        <button class="move-button app-button" data-direction="up">
+          <svg class="arrow-up" width="32" height="32" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <g class="icon">
+              <path class="icon-path" d=" M 31.9848,4.1544 41.6111,18.0699 51.2374,31.9853 32,31.9927 12.7626,32 22.3737,18.0772 31.9848,4.1544 Z M 39.7251,59.8456 24.2749,59.8456 24.2749,32 39.7251,32 39.7251,59.8456 Z" />
+            </g>
+          </svg>
+        </button>
+        <button class="move-button app-button" data-direction="down">
+          <svg class="arrow-down" width="32" height="32" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <g class="icon">
+              <path class="icon-path" d=" M 32.0152,59.8456 22.3889,45.9301 12.7626,32.0147 32,32.0073 51.2374,32 41.6263,45.9228 32.0152,59.8456 Z M 24.2749,4.1544 39.7251,4.1544 39.7251,32 24.2749,32 24.2749,4.1544 Z" _style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-opacity:1;stroke-linecap:butt;stroke-miterlimit:4;stroke-dashoffset:0;" />
+            </g>
+          </svg>
+        </button>
+        <button class="move-button app-button" data-direction="right">
+          <svg class="arrow-right" width="32" height="32" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <g class="icon">
+              <path class="icon-path" d=" M 59.8456,31.9848 45.9301,41.6111 32.0147,51.2374 32.0073,32 32,12.7626 45.9228,22.3737 59.8456,31.9848 Z M 4.1544,39.7251 4.1544,24.2749 32,24.2749 32,39.7251 4.1544,39.7251 Z" />
+            </g>
+          </svg>
+        </button>
+      </div>
+      <!-- <div id="controls" class="container">
+        <button class="move-button" data-direction="left">
+          < </button>
+            <button class="move-button" data-direction="up">^</button>
+            <button class="move-button" data-direction="down">v</button>
+            <button class="move-button" data-direction="right">></button>
+      </div> -->
+    </footer>
+  </div>
+  <!-- <script src="./grid.js" type="module"></script> -->
+  <script src="./grid.js" type="module"></script>
+  <script src="./app.js" type="module"></script>
+  <!-- <script src="./maze-scratch.js" type="module"></script> -->
+  <!-- <script src="./bfs-grid-ex1.js" type="module"></script> -->
+  <template id="cell-template">
+    <div class="cell" data-symbol="#" data-cell-type-id="0" data-cell-type-name="barrier" data-id="ctuv84hulg8skl8vc6au" data-has-character="false" data-row="0" data-column="0">
+      <div class="cell-content"></div>
+    </div>
+  </template>
+
+  <template id="maze-template">
+    <div class="maze">
+      <div class="cells"></div>
+    </div>
+  </template>
+</body>
+
+</html>

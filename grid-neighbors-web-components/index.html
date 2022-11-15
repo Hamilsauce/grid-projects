@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700;900&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:ital,wght@0,300;0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <title>OVERLAY</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/7.3.0/rxjs.umd.min.js" integrity="sha512-y3JTS47nnpKORJX8Jn1Rlm+QgRIIZHtu3hWxal0e81avPrqUH48yk+aCi+gprT0RMAcpYa0WCkapxe+bpBHD6g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+
+  <div class="gradient" id="app-shell">
+    <header id="app-header">
+      <div id="app-header-left"></div>
+      <div id="app-header-center">
+        <h1>Grid Neighbors</h1>
+      </div>
+      <div id="app-header-right"></div>
+    </header>
+    <div class="gradient" id="app">
+      <section id="app-body">
+        <grid-slot></grid-slot>
+        <div class="container">
+          <div id="grid-container">
+          </div>
+          <!-- <div id="overlay-grid"></div> -->
+        </div>
+      </section>
+    </div>
+    <footer id="app-footer">
+      <div id="controls" class="container">
+        <button class="move-button" data-direction="left">
+          < </button>
+            <button class="move-button" data-direction="up">^</button>
+            <button class="move-button" data-direction="down">v</button>
+            <button class="move-button" data-direction="right">></button>
+      </div>
+    </footer>
+  </div>
+  <!-- <script src="./grid.js" type="module"></script> -->
+  <script src="./script.js" type="module"></script>
+  <script src="./components/grid-slot.components.js" type="module"></script>
+  <!-- <script src="./maze-scratch.js" type="module"></script> -->
+  <!-- <script src="./bfs-grid-ex1.js" type="module"></script> -->
+  <template id="tile-template">
+    <div class="tile" data-symbol="#" data-tile-type-id="0" data-tile-type-name="barrier" data-id="ctuv84hulg8skl8vc6au" data-has-character="false" data-row="0" data-column="0">
+      <div class="tile-content">FUCKONG TILE</div>
+    </div>
+  </template>
+
+  <template id="grid-slot-template">
+    <!-- <style>
+      .grid-slot {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-width: 10px;
+        min-height: 10px;
+        gap: 0px;
+        background: #223DDD;
+        border: 1px solid #E4E4E4;
+      }
+    
+      .grid-slot-content {
+        width: 100%;
+        height: 100%;
+      }
+    </style> -->
+    <div class="grid-slot" 
+    data-component-name="grid-slot" 
+    component-name="grid-slot" 
+    data-model-id="ctuv84hulg8skl8vc6au" 
+    model-id="ctuv84hulg8skl8vc6au" 
+    data-is-slotted="false" 
+    is-slotted="false" 
+    data-x="0" 
+    x="0" 
+    data-y="0" 
+    y="0" 
+    address="0,0"
+    data-address="0,0">
+      <div class="grid-slot-content"></div>
+    </div>
+  </template>
+
+  <template id="grid-template">
+    <style>
+      .grid {
+        display: grid;
+        gap: 0px;
+        background: #191A2015;
+        overflow: scroll;
+      }
+
+      .tile {
+        background: #FFFFFF;
+        border: 0.25px solid #37373750;
+        transition: 0.15s ease;
+      }
+
+      .tile[data-selected=true] {
+        background: #FFEE05;
+        border: 0.25px solid #68686800;
+      }
+
+      .tile[data-highlight=true] {
+        background: #FFF811;
+        border: 0.25px solid #68686800;
+      }
+
+      .tile[data-selected=true].left {
+        border-left: 2px solid #FFFFFF;
+      }
+
+      .tile[data-selected=true].right {
+        border-right: 2px solid #FFFFFF;
+      }
+
+      .tile[data-selected=true].top {
+        border-top: 2px solid #FFFFFF;
+      }
+
+      .tile[data-selected=true].bottom {
+        border-bottom: 2px solid #FFFFFF;
+      }
+
+      .tile[data-active=true][data-selected=true] {
+        background: #FFA808;
+      }
+    </style>
+    <div class="grid" data-component-name="grid" data-model-id="ctuv84hulg8skl8vc6au" data-width="0" data-height="0"></div>
+  </template>
+</body>
+
+</html>
