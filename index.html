@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:ital,wght@0,300;0,400;0,700;1,400&display=swap" rel="stylesheet">
-  <title>OVERLAY</title>
+  <title>Grid Projects</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/7.3.0/rxjs.umd.min.js" integrity="sha512-y3JTS47nnpKORJX8Jn1Rlm+QgRIIZHtu3hWxal0e81avPrqUH48yk+aCi+gprT0RMAcpYa0WCkapxe+bpBHD6g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <link rel="stylesheet" href="./style.css" />
 </head>
@@ -19,33 +19,40 @@
     <header id="app-header">
       <div id="app-header-left"></div>
       <div id="app-header-center">
-        <h1>Grid Neighbors</h1>
+        <h2>Grid Projects Home</h2>
       </div>
       <div id="app-header-right"></div>
     </header>
     <div class="gradient" id="app">
       <section id="app-body">
-        <grid-slot></grid-slot>
+
+        <div class="body-content container">
+          List of projects:
+        </div>
+
         <div class="container">
-          <div id="grid-container">
-          </div>
-          <!-- <div id="overlay-grid"></div> -->
+          <ul>
+            <li>
+              <a href="./grid-neighbors/">Grid Path Finding And Movement Stuff</a>
+            </li>
+            <li>
+              <a href="./grid-experiments/">Coordinate System and Area/Box Selection</a>
+            </li>
+            <!-- <li>
+              <a href="./grid-neighbors/">Grid Path Finding And Movement Stuff</a>
+            </li> -->
+          </ul>
         </div>
       </section>
     </div>
     <footer id="app-footer">
-      <div id="controls" class="container">
-        <button class="move-button" data-direction="left">
-          < </button>
-            <button class="move-button" data-direction="up">^</button>
-            <button class="move-button" data-direction="down">v</button>
-            <button class="move-button" data-direction="right">></button>
-      </div>
+      <a href="https://github.com/Hamilsauce">Back to Github</a>
+      
     </footer>
   </div>
   <!-- <script src="./grid.js" type="module"></script> -->
-  <script src="./script.js" type="module"></script>
-  <script src="./components/grid-slot.components.js" type="module"></script>
+  <!-- <script src="./script.js" type="module"></script> -->
+  <!-- <script src="./components/grid-slot.components.js" type="module"></script> -->
   <!-- <script src="./maze-scratch.js" type="module"></script> -->
   <!-- <script src="./bfs-grid-ex1.js" type="module"></script> -->
   <template id="tile-template">
@@ -73,19 +80,7 @@
         height: 100%;
       }
     </style> -->
-    <div class="grid-slot" 
-    data-component-name="grid-slot" 
-    component-name="grid-slot" 
-    data-model-id="ctuv84hulg8skl8vc6au" 
-    model-id="ctuv84hulg8skl8vc6au" 
-    data-is-slotted="false" 
-    is-slotted="false" 
-    data-x="0" 
-    x="0" 
-    data-y="0" 
-    y="0" 
-    address="0,0"
-    data-address="0,0">
+    <div class="grid-slot" data-component-name="grid-slot" component-name="grid-slot" data-model-id="ctuv84hulg8skl8vc6au" model-id="ctuv84hulg8skl8vc6au" data-is-slotted="false" is-slotted="false" data-x="0" x="0" data-y="0" y="0" address="0,0" data-address="0,0">
       <div class="grid-slot-content"></div>
     </div>
   </template>
