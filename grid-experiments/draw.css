@@ -4,6 +4,7 @@
   margin: 0;
   z-index: 0;
   touch-action: none;
+  /* pointer-events */
 }
 
 html {
@@ -54,7 +55,7 @@ svg {
   fill: #E7DAC6;
 }
 
-.tile[data-selected=true] {
+#scene[data-is-drawing=false] .tile[data-selected=true] {
   fill: #EDE690 !important;
 }
 
