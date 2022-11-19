@@ -1,11 +1,11 @@
 // import {Board} from './board.js';
 import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
 const { DOM, date, array, utils, text } = ham;
-
+import { SelectionBox } from './SelectionBox.js';
 import { DetailPanel } from './view/detail-panel.view.js';
 
 let currentPanel;
-
+const selectionBox = new SelectionBox({ x: 5, y: 10 })
 
 export class UnitBoundingBox extends DOMRect {
   constructor(context, x = 0, y = 0, width = 0, height = 0) {
@@ -93,8 +93,8 @@ const getTileAtPoint = (contextEl = scene, e) => {
         y: t.y.baseVal.value,
       }
 
-      return +t.dataset.x == point.x && +t.dataset.y == point.y
-      return unitTile.x == point.x && unitTile.y == point.y
+      return +t.dataset.x == point.x && +t.dataset.y == point.y;
+      return unitTile.x == point.x && unitTile.y == point.y;
 
       return !(
         point.y > unitTile.bottom ||
@@ -104,33 +104,38 @@ const getTileAtPoint = (contextEl = scene, e) => {
       )
     });
 
-  return targetTile
+  return targetTile;
 }
 
 const getTiles = () => [...document.querySelectorAll('.tile')];
 
 
 const initScene = (svg = new SVGSVGElement, scene = new SVGPathElement()) => {
-  const sceneTransforms = scene.transform.baseVal
+  const sceneTransforms = scene.transform.baseVal;
   const translate = svg.createSVGTransform();
-  sceneTransforms.clear()
+  sceneTransforms.clear();
   sceneTransforms.appendItem(translate);
   translate.setTranslate(-5, -10);
-  surface.width.baseVal.value = 10
-  surface.height.baseVal.value = 20
+  surface.width.baseVal.value = 10;
+  surface.height.baseVal.value = 20;
 };
 
 
 const drawStart = (e) => {
+  if (currentSelector) {
+    currentSelector.remove();
+    currentSelector = null;
+  };
+
   const p = domPoint(scene, e.clientX, e.clientY);
-  const adjustedPoint = roundPoint(p, 'floor')
+  const adjustedPoint = roundPoint(p, 'floor');
 
   startP = adjustedPoint;
   isDrawing = true;
- scene.dataset.isDrawing = true;
-  currentSelector = drawRect(adjustedPoint, 1, '#FFFFFF40', 'selection')
+  scene.dataset.isDrawing = true;
+  currentSelector = drawRect(adjustedPoint, 1, '#FFFFFF20', 'selection')
 
-  scene.appendChild(currentSelector)
+  scene.appendChild(currentSelector);
 };
 
 const drawMove = (e) => {
@@ -153,7 +158,7 @@ const drawMove = (e) => {
         )) {
         t.dataset.selected = true;
       }
-      else { t.dataset.selected = false }
+      else { t.dataset.selected = false; }
     });
   }
 };
@@ -165,11 +170,11 @@ const drawStop = (e) => {
   width = Math.floor((width / pixelScale));
   height = Math.floor(height / pixelScale);
   isDrawing = false;
- scene.dataset.isDrawing = false;
+  scene.dataset.isDrawing = false;
 
-  selectedRect = Object.assign(bbox, roundPoint(domPoint(canvas, bbox.x, bbox.y)), { width, height })
+  selectedRect = Object.assign(bbox, roundPoint(domPoint(canvas, bbox.x, bbox.y)), { width, height });
 
-  let endpoint = roundPoint(domPoint(scene, e.clientX, e.clientY))
+  let endpoint = roundPoint(domPoint(scene, e.clientX, e.clientY));
 
   selectionVector = [
     { x: startP.x - 1, y: startP.y - 1 },
@@ -179,12 +184,8 @@ const drawStop = (e) => {
     }
   ];
 
-  currentSelector.remove();
-  currentSelector = null;
   startP = null;
 };
-
-
 
 const handleTileClick = (e) => {
   const currFocused = [...document.querySelectorAll('rect[data-focused="true"]')];
@@ -239,8 +240,9 @@ Object.assign(viewBox.baseVal, {
 
 pixelScale = canvasBBox.width / viewBox.baseVal.width
 const unitBbox = new UnitBoundingBox(scene)
-console.log('unitBbox', unitBbox)
-console.log('pixelScale', pixelScale)
+
+scene.append(selectionBox.dom);
+
 canvas.addEventListener('pointerdown', e => {
   drawStart(e);
 });
@@ -257,13 +259,14 @@ canvas.addEventListener('pointerup', e => {
 canvas.addEventListener('click', e => {
   e.stopPropagation();
   e.preventDefault();
+
   handleTileClick(e);
 });
 
 
-renderTiles(tileContainer, 10, 20)
+renderTiles(tileContainer, 10, 20);
 
-initScene(canvas, scene)
+initScene(canvas, scene);
 
 getTiles().forEach((t, i) => {
   t.addEventListener('pointerleave', e => {

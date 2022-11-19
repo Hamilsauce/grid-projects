@@ -48,7 +48,7 @@ svg {
 
 .tile {
   fill: #E7DAC6;
-  
+
 }
 
 .tile[data-selected=false] {
@@ -61,6 +61,9 @@ svg {
 
 .tile[data-focused=true] {
   fill: #D644C4 !important;
+  stroke: #88F4FF;
+  stroke-width: 0.075;
+  /* z-index: 500; */
 }
 
 .selection {
@@ -69,6 +72,14 @@ svg {
   stroke: #CCDCDC8F;
   stroke-width: 0.05;
 }
+
+#scene[data-is-drawing=false] .selection {
+  fill: #00000012 !important;
+  
+  stroke: #FF88F5;
+  stroke-width: 0.1;
+}
+
 
 .tile-face {
   fill: #42445A;
