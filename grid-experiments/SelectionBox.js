@@ -1,22 +1,8 @@
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
-
-const domPoint = (element, x, y) => {
-  return new DOMPoint(x, y).matrixTransform(
-    element.getScreenCTM().inverse()
-  )
-};
-
-const roundPoint = (p, dir = 'floor') => {
-  return { x: dir === 'floor' ? Math.floor(p.x) : Math.ceil(p.x), y: dir === 'floor' ? Math.floor(p.y) : Math.ceil(p.y) }
-};
-
-
 export class TileSelector {
   #self;
   #selectionBox;
-
-
 
   #points = {
     start: null,

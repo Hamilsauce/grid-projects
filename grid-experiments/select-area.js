@@ -109,7 +109,6 @@ const getTileAtPoint = (contextEl = scene, e) => {
 
 const getTiles = () => [...document.querySelectorAll('.tile')];
 
-
 const initScene = (svg = new SVGSVGElement, scene = new SVGPathElement()) => {
   const sceneTransforms = scene.transform.baseVal;
   const translate = svg.createSVGTransform();
@@ -217,17 +216,14 @@ const handleTileClick = (e) => {
     currentPanel.appendTo(scene);
     selectionBox.insertAt(tile)
   }
-}
+};
 
 const canvas = document.querySelector('#svg');
 const scene = document.querySelector('#scene');
 const tileContainer = scene.querySelector('#tile-container');
 const surface = scene.querySelector('#surface');
-const viewBox = canvas.viewBox
-const selectionBox = new TileSelector(scene)
-// const selectionBox = new TileSelector({ x: 5, y: 10 })
-
-console.warn('scene instanceof SVGElement', scene instanceof SVGElement)
+const viewBox = canvas.viewBox;
+const selectionBox = new TileSelector(scene);
 
 let startP;
 let currentSelector;
