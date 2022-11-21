@@ -9,6 +9,7 @@ const foreignObject = `
   </foreignObject>
 `
 const SVG_NS = 'http://www.w3.org/2000/svg'
+
 export class DetailPanel {
   constructor(tile) {
     this.panel = document.createElementNS(SVG_NS, 'g');
@@ -48,8 +49,8 @@ export class DetailPanel {
     this.panel.appendChild(this.content)
   }
 
-  removeFrom(el) {
-    el.removeChild(this.panel)
+  reomve(el) {
+    this.panel.remove()
     // el.removeChild(this.surface )
 
   }

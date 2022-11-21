@@ -1,11 +1,11 @@
 // import {Board} from './board.js';
 import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
 const { DOM, date, array, utils, text } = ham;
-import { SelectionBox } from './SelectionBox.js';
+import { TileSelector } from './SelectionBox.js';
 import { DetailPanel } from './view/detail-panel.view.js';
 
 let currentPanel;
-const selectionBox = new SelectionBox({ x: 5, y: 10 })
+let currentSelection;
 
 export class UnitBoundingBox extends DOMRect {
   constructor(context, x = 0, y = 0, width = 0, height = 0) {
@@ -133,18 +133,22 @@ const drawStart = (e) => {
   startP = adjustedPoint;
   isDrawing = true;
   scene.dataset.isDrawing = true;
-  currentSelector = drawRect(adjustedPoint, 1, '#FFFFFF20', 'selection')
+  // currentSelector = drawRect(adjustedPoint, 1, '#FFFFFF20', 'selection')
 
-  scene.appendChild(currentSelector);
+  // scene.appendChild(currentSelector);
 };
 
 const drawMove = (e) => {
   const p = domPoint(scene, e.clientX, e.clientY);
   const adjustedPoint = roundPoint(p);
 
+  console.log('adjustedPoint', adjustedPoint)
+
   if (isDrawing) {
     currentSelector.width.baseVal.value = adjustedPoint.x - startP.x;
     currentSelector.height.baseVal.value = adjustedPoint.y - startP.y;
+console.log('selectionBox.boundingBox', selectionBox.boundingBox)
+    // selectionBox.setEndPoint(adjustedPoint)
 
     getTiles().forEach((t, i) => {
       const unitTile = t.getBoundingClientRect();
@@ -193,7 +197,8 @@ const handleTileClick = (e) => {
   const tile = getTileAtPoint(scene, e);
 
   if (activePanel && currentPanel && currentPanel instanceof DetailPanel) {
-    scene.removeChild(activePanel);
+    activePanel.remove();
+    // scene.removeChild(activePanel);
   }
 
   if (tile.dataset.focused === 'true') {
@@ -210,6 +215,7 @@ const handleTileClick = (e) => {
     tile.dataset.focused = true;
 
     currentPanel.appendTo(scene);
+    selectionBox.insertAt(tile)
   }
 }
 
@@ -218,6 +224,10 @@ const scene = document.querySelector('#scene');
 const tileContainer = scene.querySelector('#tile-container');
 const surface = scene.querySelector('#surface');
 const viewBox = canvas.viewBox
+const selectionBox = new TileSelector(scene)
+// const selectionBox = new TileSelector({ x: 5, y: 10 })
+
+console.warn('scene instanceof SVGElement', scene instanceof SVGElement)
 
 let startP;
 let currentSelector;
@@ -243,18 +253,17 @@ const unitBbox = new UnitBoundingBox(scene)
 
 scene.append(selectionBox.dom);
 
-canvas.addEventListener('pointerdown', e => {
-  drawStart(e);
-});
+// canvas.addEventListener('pointerdown', e => {
+//   drawStart(e);
+// });
 
-canvas.addEventListener('pointermove', e => {
-  drawMove(e);
-});
+// canvas.addEventListener('pointermove', e => {
+//   drawMove(e);
+// });
 
-
-canvas.addEventListener('pointerup', e => {
-  drawStop(e);
-});
+// canvas.addEventListener('pointerup', e => {
+//   drawStop(e);
+// });
 
 canvas.addEventListener('click', e => {
   e.stopPropagation();
