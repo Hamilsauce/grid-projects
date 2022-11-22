@@ -1,7 +1,7 @@
 // import {Board} from './board.js';
 import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
 const { DOM, date, array, utils, text } = ham;
-import { TileSelector } from './SelectionBox.js';
+import { TileSelector, getTileSelector } from './SelectionBox.js';
 import { DetailPanel } from './view/detail-panel.view.js';
 
 let currentPanel;
@@ -200,11 +200,11 @@ const handleTileClick = (e) => {
     // scene.removeChild(activePanel);
   }
 
-  if (tile.dataset.focused === 'true') {
+  if (tile && tile.dataset.focused === 'true') {
     tile.dataset.focused = false;
   }
 
-  else {
+  else if (tile) {
     currFocused.forEach((t, i) => {
       t.dataset.focused = false;
     });
@@ -223,7 +223,9 @@ const scene = document.querySelector('#scene');
 const tileContainer = scene.querySelector('#tile-container');
 const surface = scene.querySelector('#surface');
 const viewBox = canvas.viewBox;
-const selectionBox = new TileSelector(scene);
+
+const selectionBox = getTileSelector(scene);
+
 
 let startP;
 let currentSelector;
@@ -265,6 +267,13 @@ canvas.addEventListener('click', e => {
   e.stopPropagation();
   e.preventDefault();
 
+  handleTileClick(e);
+});
+
+canvas.addEventListener('selection', e => {
+  e.stopPropagation();
+  e.preventDefault();
+console.log('selection heard in app', e.detail);
   handleTileClick(e);
 });
 
