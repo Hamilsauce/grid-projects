@@ -137,6 +137,25 @@ const drawStart = (e) => {
   // scene.appendChild(currentSelector);
 };
 
+const selectionChange = ({ detail }) => {
+  const { start, end } = detail;
+  console.log('start, end ', start, end )
+  getTiles().forEach((t, i) => {
+    const unitTile = t.getBoundingClientRect();
+    // const selBbox = currentSelector.getBoundingClientRect();
+
+    if (!(
+        +t.dataset.y + 5 > start.y ||
+        +t.dataset.x - 5 < selBbox.x ||
+        +t.dataset.y - 5 < start.y ||
+        +t.dataset.x + 5 > end.x
+      )) {
+      t.dataset.selected = true;
+    }
+    else { t.dataset.selected = false; }
+  });
+}
+
 const drawMove = (e) => {
   const p = domPoint(scene, e.clientX, e.clientY);
   const adjustedPoint = roundPoint(p);
@@ -146,7 +165,7 @@ const drawMove = (e) => {
   if (isDrawing) {
     currentSelector.width.baseVal.value = adjustedPoint.x - startP.x;
     currentSelector.height.baseVal.value = adjustedPoint.y - startP.y;
-console.log('selectionBox.boundingBox', selectionBox.boundingBox)
+    console.log('selectionBox.boundingBox', selectionBox.boundingBox)
     // selectionBox.setEndPoint(adjustedPoint)
 
     getTiles().forEach((t, i) => {
@@ -273,8 +292,9 @@ canvas.addEventListener('click', e => {
 canvas.addEventListener('selection', e => {
   e.stopPropagation();
   e.preventDefault();
-console.log('selection heard in app', e.detail);
-  handleTileClick(e);
+  selectionChange(e)
+  // console.log('selection heard in app', e.detail);
+  // handleTileClick(e);
 });
 
 

@@ -130,8 +130,8 @@ export class TileSelector {
 
   setEndPoint({ x, y }) {
     this.#points.end = {
-      x: +x,
-      y: +y,
+      x: +x || null,
+      y: +y || null,
     }
 
     this.updateSelection();
@@ -140,11 +140,12 @@ export class TileSelector {
   }
 
   resetPoints() {
-    this.#points = {
-      start: { x: null, y: null },
-      end: { x: null, y: null },
-    }
-
+    // this.#points = {
+    //   start: { x: null, y: null },
+    //   end: { x: null, y: null },
+    // }
+    this.setStartPoint({ x: null, y: null })
+    this.setEndPoint({ x: null, y: null })
     return this;
   }
 
