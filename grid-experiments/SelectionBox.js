@@ -1,9 +1,19 @@
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
+const validatePoint = ({ x, y }) => {
+  return !isNaN(+x) && !isNaN(+y) ? true : false
+};
+
+const validatePoints = (...points) => {
+  return points.every(point => validatePoint(point))
+};
+
+
+
 export class TileSelector {
   #self;
   #selectionBox;
-
+  #unitSize = 1;
   #points = {
     start: { x: null, y: null },
     end: { x: null, y: null },
@@ -14,10 +24,12 @@ export class TileSelector {
     end: null,
   };
 
-  constructor(ctx) {
+  constructor(ctx, options = {}) {
     if (!ctx || !(ctx instanceof SVGElement)) return;
 
     this.ctx = ctx;
+
+    this.#unitSize = options.unitSize ? options.unitSize : this.#unitSize;
 
     this.#self = document.createElementNS(SVG_NS, 'g');
 
@@ -61,7 +73,19 @@ export class TileSelector {
 
   get y() { return +this.#selectionBox.getAttribute('y') }
 
+  get selectedDistance() {
+    return this.getDistance(this.startPoint, this.endPoint)
+    if ((this.startPoint.x && this.startPoint.y &&
+        this.endPoint.x && this.endPoint.y)) {
 
+      const startSum = this.startPoint.x + this.startPoint.y;
+      const endSum = this.endPoint.x + this.endPoint.y;
+
+      return (startSum > endSum) ? startSum - endSum : endSum - startSum;
+    }
+
+    return null;
+  }
   domPoint(x, y, dir = 'floor') {
     const p = new DOMPoint(x, y).matrixTransform(
       this.ctx.getScreenCTM().inverse()
@@ -98,6 +122,7 @@ export class TileSelector {
     return this;
   }
 
+
   insertAt(tile) {
     this.setStartPoint({
       x: +tile.dataset.x,
@@ -114,6 +139,8 @@ export class TileSelector {
   }
 
   setStartPoint({ x, y }) {
+    if (!validatePoint({ x, y })) return console.error('Invalid point in selector');
+
     this.#points.start = {
       x: +x,
       y: +y,
@@ -129,6 +156,7 @@ export class TileSelector {
   }
 
   setEndPoint({ x, y }) {
+
     this.#points.end = {
       x: +x || null,
       y: +y || null,
@@ -162,17 +190,37 @@ export class TileSelector {
     this.#handles.end.setAttribute('cy', this.endPoint.y);
   }
 
+  getDistance(from, to) {
+    if (!validatePoints(from, to)) {
+      console.error('Invalid point in selector');
+      return null;
+    }
+
+    return (to.x + to.y) - (from.x + from.y);
+    // return (startSum > endSum) ? startSum - endSum : endSum - startSum;
+  }
+
   onDragHandle(e) {
     const handle = e.target.closest('.selection-handle');
-    const { clientX, clientY } = e;
+    if (!handle) return;
 
-    if (handle.dataset.handle === 'start') {
+    const { clientX, clientY } = e;
+    const pt = this.domPoint(clientX, clientY)
+
+
+
+    if (handle.dataset.handle === 'start' &&
+      validatePoint(pt) 
+      // && this.getDistance(pt, this.startPoint) >= 1
+    ) {
       this.setStartPoint(this.domPoint(clientX, clientY));
     }
-    else {
+    else if (validatePoint(pt) && this.getDistance(this.startPoint, pt) >= 1) {
       this.setEndPoint(this.domPoint(clientX, clientY));
     }
 
+    console.log('this.getDistance(pt, this.startPoint)', this.getDistance(this.startPoint, pt))
+    console.warn('this.selectedDistance', this.selectedDistance)
     this.emitRange()
   }
 

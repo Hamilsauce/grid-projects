@@ -4,6 +4,9 @@ const { DOM, date, array, utils, text } = ham;
 import { TileSelector, getTileSelector } from './SelectionBox.js';
 import { DetailPanel } from './view/detail-panel.view.js';
 
+const vec1 = {x: 0}
+console.log('+vec1.x', !isNaN(+vec1.x) ? true : false)
+
 let currentPanel;
 let currentSelection;
 

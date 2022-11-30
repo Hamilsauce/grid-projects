@@ -4,7 +4,8 @@ const { forkJoin, Observable, iif, BehaviorSubject, AsyncSubject, Subject, inter
 const { distinctUntilChanged, flatMap, reduce, groupBy, toArray, mergeMap, switchMap, scan, map, tap, filter } = rxjs.operators;
 const { fromFetch } = rxjs.fetch;
 
-console.warn('Map', typeof Map)
+console.warn('Map', typeof Map);
+
 export class TileView {
 
   #type;
