@@ -74,6 +74,11 @@ export class GridView {
     return this.dims.width
   }
 
+  // set dims({ width, height, tilesize }) {
+    
+  //   return this.dims.width
+  // }
+
   get self() {
     return document.querySelector(`.grid`)
   }
@@ -174,7 +179,20 @@ export class GridView {
         return !n ? neighbors : { ...neighbors, [dirName]: n }
       }, {})
   }
+  
+  
 
+  update(type, update) {
+    console.warn('update', update)
+    Object.assign(this.dims, {[update.name]: update.value})
+    console.warn('this.dims', this.dims)
+  
+   this.createGrid(this.dims)
+    // if (type === 'dims') {
+      
+    // }
+  }
+  
   createGrid(dims, savedTiles) {
     this.tiles.clear();
     this.self.innerHTML = '';
@@ -210,6 +228,21 @@ export class GridView {
 
     return vect
   }
+
+  setDimensions(dims = {}) {
+    const dimNames = ['width', 'height', 'unitSize', 'scale']
+    const cleaned = Object.fromEntries(Object.entries(dims).filter(([k, v]) => dimNames.includes(k) && !!(+v)))
+
+    Object.assign(this.dims, cleaned);
+
+    this.setGridSize(cleaned);
+  }
+
+  // setGridTemplateSize(dims) {
+  //   this.dims = dims ? dims : this.dims
+  //   this.self.style.gridTemplateColumns = `repeat(${ dims.width || this.#dimensions.width }, ${this.#dimensions.scale}px)`;
+  //   this.self.style.gridTemplateRows = `repeat(${ dims.height || this.#dimensions.height }, ${this.#dimensions.scale}px)`;
+  // }
 
   parseTileAddress(tile) {
     console.assert(tile && tile.dataset, 'no tile', tile);

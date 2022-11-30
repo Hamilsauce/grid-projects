@@ -17,11 +17,12 @@
 
   <div class="gradient" id="app-shell">
     <header id="app-header">
-      <div id="app-header-left"></div>
-      <div id="app-header-center">
+
+      <!-- <div id="app-header-left"></div> -->
+      <!-- <div id="app-header-center">
         <h2>Grid Neighbors</h2>
-      </div>
-      <div id="app-header-right"></div>
+      </div> -->
+      <!-- <div id="app-header-right"></div> -->
     </header>
     <div class="gradient" id="app">
       <section id="app-body">
@@ -32,6 +33,8 @@
       </section>
     </div>
     <footer id="app-footer">
+      <div id="controls-label" class="label">Tiles</div>
+
       <div id="controls" class="container">
         <button class="move-button app-button" data-direction="left">
           <svg class="arrow-left" width="32" height="32" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -63,11 +66,11 @@
         </button>
       </div>
       <!-- <div id="controls" class="container">
-        <button class="move-button" data-direction="left">
+        <button class="app-button" data-direction="left">
           < </button>
-            <button class="move-button" data-direction="up">^</button>
-            <button class="move-button" data-direction="down">v</button>
-            <button class="move-button" data-direction="right">></button>
+            <button class="app-button" data-direction="up">^</button>
+            <button class="app-button" data-direction="down">v</button>
+            <button class="app-button" data-direction="right">></button>
       </div> -->
     </footer>
   </div>
@@ -76,6 +79,20 @@
   <script src="./app.js" type="module"></script>
   <!-- <script src="./maze-scratch.js" type="module"></script> -->
   <!-- <script src="./bfs-grid-ex1.js" type="module"></script> -->
+  <template id="grid-options-template">
+    <div id="grid-options">
+      <!-- <button id="grid-options-toggle" class="app-button" type="button">Options</button> -->
+      <!-- <div id="grid-options-menu"></div> -->
+    </div>
+  </template>
+
+  <template id="grid-option-template">
+    <div class="grid-option">
+      <label for="" class="option-label"></label>
+      <input type="text" name="" id="" class="option-input">
+    </div>
+  </template>
+
   <template id="cell-template">
     <div class="cell" data-symbol="#" data-cell-type-id="0" data-cell-type-name="barrier" data-id="ctuv84hulg8skl8vc6au" data-has-character="false" data-row="0" data-column="0">
       <div class="cell-content"></div>

@@ -1,5 +1,16 @@
 import { Cell,Row } from './models/index.js';
 
+
+
+const GridInterface = {
+  
+}
+
+const DEFAULT_GRID = {
+  
+}
+
+
 const cell1 = new Cell({
   row: 1,
   column: 2,

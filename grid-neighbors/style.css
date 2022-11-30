@@ -57,9 +57,10 @@ body {
   overflow: scroll;
   color: #EFEFEF;
 }
+
 #app-body {
   position: relative;
-/* 
+  /* 
   display: grid;
   grid-template-rows: 1fr;
   grid-template-columns: 1fr;
@@ -84,7 +85,7 @@ body {
 
 #app-footer {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
   background: #F21515;
@@ -92,6 +93,68 @@ body {
   width: 100%;
   height: 100%;
 }
+
+#grid-options {
+  /* position: relative; */
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  height: 100%;
+padding: 8px;
+  border: 1px solid #FFFFFF;
+  /* overflow: visible; */
+  /* z-index: 590; */
+}
+
+/* #grid-options-toggle.app-button {
+  padding: 4px;
+  font-size: 18px;
+  z-index: 101;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+
+} */
+
+.grid-option {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 0px;
+  /* width: 100%; */
+  /* height: 100%; */
+}
+
+.grid-option label {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0px;
+  
+  /* width: 100%; */
+  /* height: 100%; */
+  font-size: 13px;
+}
+
+.grid-option input {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0px;
+  width: 50px;
+  padding: 4px 4px;
+  /* height: 100%; */
+}
+
+/* #grid-options[data-show-menu=true] #grid-options-menu {} */
+
+
 
 #controls {
   /* display: flex;
@@ -145,7 +208,7 @@ body {
   font-weight: 600;
 }
 
-.move-button {
+.app-button {
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -205,7 +268,7 @@ body {
 
 
 
-.tile[data-active=true][data-selected=true]  {
+.tile[data-active=true][data-selected=true] {
   background: #FFA808;
   /* border: 0.25px solid #68686800; */
   /* transition: 0.075s ease; */
@@ -223,6 +286,7 @@ body {
   background: #3ED725;
   border: 2px solid #FFEE05;
 }
+
 /* .tile[data-selected=true] {
   background: #EAE91530;
   border: 0.25px solid #DBA60E50;
@@ -274,7 +338,7 @@ body {
 }
 
 
-.move-button {
+.app-button {
   background: #2A2A2E50;
   border: 1px solid #5F5F5F;
   width: 100%;
@@ -284,12 +348,12 @@ body {
   font-size: 24px;
 }
 
-.move-button svg .icon-path {
+.app-button svg .icon-path {
   fill: #EFEFEF;
-  
+
 }
 
-.move-button:active {
+.app-button:active {
   background: #3F415320;
   backdrop-filter: brightness(200%);
   filter: contrast(120%);
