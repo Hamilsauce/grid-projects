@@ -2,25 +2,11 @@ import { GridView } from './components/grid.component.js';
 import { movesKeys$ } from './store/movement-keys.state.js';
 import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
 
-const { template, utils } = ham;
+const { template, utils,DOM } = ham;
 
 const { forkJoin, Observable, iif, BehaviorSubject, AsyncSubject, Subject, interval, of , fromEvent, merge, empty, delay, from } = rxjs;
 const { flatMap, reduce, groupBy, toArray, mergeMap, switchMap, scan, map, tap, filter } = rxjs.operators;
 const { fromFetch } = rxjs.fetch;
-
-const fromTemplate = (name, options = {}) => {
-  const el = template(name);
-  if (!el) return null;
-
-  const { dataset, children, ...opts } = options;
-
-  if (dataset) { Object.assign(el.dataset, dataset); }
-  if (opts) { Object.assign(opts, opts); }
-  if (children && children.length > 0) { el.append(...children) }
-
-  return el;
-};
-
 
 const appShell = document.querySelector('#app-shell')
 const appbody = document.querySelector('#app-body')
@@ -49,12 +35,16 @@ const GRID_OPTIONS_CONFIG = [
   },
 ]
 
-const gridOptions = fromTemplate('grid-options', {
-  onclick: (e) => {
-    console.warn('onclick', e)
+const gridOptions = DOM.createElement({
+    templateName: 'grid-options',
+    elementProperties: {
+      onclick: (e) => {
+        console.warn('onclick', e)
+      }
+    }
   },
-  children: GRID_OPTIONS_CONFIG.map((opt) => {
-    const o = fromTemplate('grid-option')
+  GRID_OPTIONS_CONFIG.map((opt) => {
+    const o = template('grid-option')
     const l = o.querySelector('label');
     const i = o.querySelector('input');
     o.dataset.optionName = opt.name
@@ -64,7 +54,7 @@ const gridOptions = fromTemplate('grid-options', {
 
     return o;
   })
-});
+);
 
 gridOptions.addEventListener('change', e => {
   const targ = e.target.closest('input');
@@ -72,7 +62,7 @@ gridOptions.addEventListener('change', e => {
   const optionName = opt.dataset.optionName;
   console.log('targ.value', targ.value)
   console.log('!isNaN(+targ.value)', !isNaN(+targ.value.trim()))
-  const value = !isNaN(+targ.value.trim()) ? +e.target.closest('input').value.trim(): 0;
+  const value = !isNaN(+targ.value.trim()) ? +e.target.closest('input').value.trim() : 0;
 
   gridOptions.dispatchEvent(new CustomEvent('option:change', { bubbles: true, detail: { name: optionName, value } }))
 
@@ -108,11 +98,11 @@ appbody.append(
 
 const grid = new GridView(dims);
 
-appShell .addEventListener('option:change', ({detail}) => {
-  const {name, value} = detail
-  console.log('name,value}', {name,value})
-  grid.update('dims',{name,value})
-  
+appShell.addEventListener('option:change', ({ detail }) => {
+  const { name, value } = detail
+  console.log('name,value}', { name, value })
+  grid.update('dims', { name, value })
+
 });
 
 
