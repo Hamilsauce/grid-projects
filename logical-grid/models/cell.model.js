@@ -1,4 +1,4 @@
-import { Position } from './index.js';
+import { Position } from './position.model.js';
 
 export class Cell extends Position {
   #value;

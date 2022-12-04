@@ -1,4 +1,4 @@
-export { GridObject } from './grid-object.model.js';
+// export { GridObject } from './grid-object.model.js';
 export { Position } from './position.model.js';
 export { Range } from './range.model.js';
 export { Cell } from './cell.model.js';

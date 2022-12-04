@@ -1,10 +1,14 @@
-import { GridObject } from './index.js';
+import { GridObject } from './grid-object.model.js';
+// import { GridObject } from './index.js';
 
 export class Range extends GridObject {
-  constructor() {
+  #row;
+  #column;
+  
+  constructor(row, column) {
+    if (!row || !column) throw new Error('No missing either row or col in Position constructor')
     super();
-    this.root;
-  };
-  // get prop() { return this.#prop };
-  // set prop(v) { this.#prop = v };
+    
+    
+  }
 }

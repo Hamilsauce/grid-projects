@@ -1,4 +1,5 @@
-import { GridObject } from './index.js';
+import { GridObject } from './grid-object.model.js';
+// import { GridObject } from './index.js';
 
 export class Position extends GridObject {
   #row;

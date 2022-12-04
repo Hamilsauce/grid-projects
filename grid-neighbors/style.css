@@ -103,7 +103,7 @@ body {
   gap: 16px;
   width: 100%;
   height: 100%;
-padding: 8px;
+  padding: 8px;
   border: 1px solid #FFFFFF;
   /* overflow: visible; */
   /* z-index: 590; */
@@ -135,7 +135,7 @@ padding: 8px;
   justify-content: flex-start;
   align-items: center;
   gap: 0px;
-  
+
   /* width: 100%; */
   /* height: 100%; */
   font-size: 13px;
@@ -226,7 +226,11 @@ padding: 8px;
   /* border: 1px solid #3B3B3B; */
   overflow: scroll;
   background: #191A2020;
-  background: #191A2015;
+  background: #191A2040;
+  width: 100%;
+  padding: 4px;
+/* min-width:100vw;min-height:100vh; */
+  height: 100%;
 }
 
 

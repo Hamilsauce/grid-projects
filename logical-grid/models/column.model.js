@@ -1,4 +1,5 @@
-import { GridObject } from './index.js';
+import { GridObject } from './grid-object.model.js';
+// import { GridObject } forom './index.js';
 
 export class Column  extends GridObject {
   constructor() {
