@@ -3,7 +3,7 @@
   padding: 0;
   margin: 0;
   z-index: 0;
-
+user-select: none;
 }
 
 html {
@@ -57,17 +57,22 @@ body {
   overflow: scroll;
   color: #EFEFEF;
 }
+
 #app-body {
-  position: relative;
-/* 
+  /* position: relative; */
   display: grid;
   grid-template-rows: 1fr;
   grid-template-columns: 1fr;
-  gap: 0px; */
+  gap: 0px;
   width: 100%;
   height: 100%;
-  overflow: scroll;
+  /* overflow: scroll; */
   padding: 6px;
+  
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
   /* border-radius: 30px; */
   /* color: #EFEFEF; */
 }
@@ -75,10 +80,19 @@ body {
 #app-header {
   display: flex;
   flex-direction: row;
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-start;
+  align-items: flex-start;
   gap: 0px;
   padding: 8px 4px;
+}
+
+#output {
+  background: #262121;
+  width: fit-content;
+  height: fit-content;
+  padding: 8px;
+user-select: all;
+  
 }
 
 
@@ -93,7 +107,7 @@ body {
   height: 100%;
 }
 
-#controls {
+#toolbar {
   /* display: flex;
   flex-direction: row;
   justify-content: flex-start;
@@ -145,13 +159,13 @@ body {
   font-weight: 600;
 }
 
-.move-button {
+.tool-button {
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
   padding: 8px;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
 }
 
@@ -205,7 +219,7 @@ body {
 
 
 
-.tile[data-active=true][data-selected=true]  {
+.tile[data-active=true][data-selected=true] {
   background: #FFA808;
   /* border: 0.25px solid #68686800; */
   /* transition: 0.075s ease; */
@@ -223,6 +237,7 @@ body {
   background: #3ED725;
   border: 2px solid #FFEE05;
 }
+
 /* .tile[data-selected=true] {
   background: #EAE91530;
   border: 0.25px solid #DBA60E50;
@@ -274,22 +289,22 @@ body {
 }
 
 
-.move-button {
+.tool-button {
   background: #2A2A2E50;
   border: 1px solid #5F5F5F;
   width: 100%;
   height: 100%;
   border-radius: 3px;
   color: #EFEFEF;
-  font-size: 24px;
+  font-size: 18px;
 }
 
-.move-button svg .icon-path {
+.tool-button svg .icon-path {
   fill: #EFEFEF;
-  
+
 }
 
-.move-button:active {
+.tool-button:active {
   background: #3F415320;
   backdrop-filter: brightness(200%);
   filter: contrast(120%);
