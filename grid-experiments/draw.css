@@ -46,6 +46,7 @@ svg {
   fill: #626262;
 }
 
+
 .tile {
   fill: #E7DAC6;
 
@@ -55,9 +56,14 @@ svg {
   fill: #E7DAC6;
 }
 
-#scene[data-is-drawing=false] .tile[data-selected=true] {
-  fill: #EDE690 !important;
+
+.tile[data-selected=true] {
+  fill: #D3D3D3 !important;
 }
+
+/* #scene[data-is-drawing=false] .tile[data-selected=true] {
+  fill: #EDE690 !important;
+} */
 
 .tile[data-focused=true] {
   fill: #D644C4 !important;

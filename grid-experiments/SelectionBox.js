@@ -1,3 +1,7 @@
+import { EventEmitter } from 'https://hamilsauce.github.io/hamhelper/event-emitter.js';
+import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
+const { template, utils } = ham;
+
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 const validatePoint = ({ x, y }) => {
@@ -8,9 +12,7 @@ const validatePoints = (...points) => {
   return points.every(point => validatePoint(point))
 };
 
-
-
-export class TileSelector {
+export class TileSelector extends EventEmitter {
   #self;
   #selectionBox;
   #unitSize = 1;
@@ -26,6 +28,7 @@ export class TileSelector {
 
   constructor(ctx, options = {}) {
     if (!ctx || !(ctx instanceof SVGElement)) return;
+    super();
 
     this.ctx = ctx;
 
@@ -49,8 +52,13 @@ export class TileSelector {
 
     this.init();
 
-    this.#handles.start.addEventListener('pointermove', this.onDragHandle.bind(this));
-    this.#handles.end.addEventListener('pointermove', this.onDragHandle.bind(this));
+    this.dragHandler = this.onDragHandle.bind(this)
+    this.dragEndHandler = this.onDragEnd.bind(this)
+
+    this.#handles.start.addEventListener('pointermove', this.dragHandler);
+    this.#handles.start.addEventListener('pointerup', this.dragEndHandler);
+    this.#handles.end.addEventListener('pointermove', this.dragHandler);
+    this.#handles.end.addEventListener('pointerup', this.dragEndHandler);
   }
 
   get parent() { return this.#self.parentElement };
@@ -65,9 +73,9 @@ export class TileSelector {
 
   get boundingBox() { return this.#selectionBox.getBoundingClientRect() };
 
-  get width() { return this.endPoint.x - this.startPoint.x || 1 }
+  get width() { return this.endPoint.x - this.startPoint.x || this.#unitSize }
 
-  get height() { return this.endPoint.y - this.startPoint.y || 1 }
+  get height() { return this.endPoint.y - this.startPoint.y || this.#unitSize }
 
   get x() { return +this.#selectionBox.getAttribute('x') }
 
@@ -75,17 +83,8 @@ export class TileSelector {
 
   get selectedDistance() {
     return this.getDistance(this.startPoint, this.endPoint)
-    if ((this.startPoint.x && this.startPoint.y &&
-        this.endPoint.x && this.endPoint.y)) {
-
-      const startSum = this.startPoint.x + this.startPoint.y;
-      const endSum = this.endPoint.x + this.endPoint.y;
-
-      return (startSum > endSum) ? startSum - endSum : endSum - startSum;
-    }
-
-    return null;
   }
+
   domPoint(x, y, dir = 'floor') {
     const p = new DOMPoint(x, y).matrixTransform(
       this.ctx.getScreenCTM().inverse()
@@ -101,12 +100,12 @@ export class TileSelector {
 
     this.#self.append(this.#selectionBox);
 
-    this.#handles.start.setAttribute('r', 0.25);
-    this.#handles.start.setAttribute('fill', 'white');
+    this.#handles.start.setAttribute('r', 0.33);
+    this.#handles.start.setAttribute('fill', 'orange');
     this.#handles.start.setAttribute('stroke-width', 0.07);
     this.#handles.start.setAttribute('stroke', 'green');
 
-    this.#handles.end.setAttribute('r', 0.25);
+    this.#handles.end.setAttribute('r', 0.33);
     this.#handles.end.setAttribute('fill', 'white');
     this.#handles.end.setAttribute('stroke-width', 0.07);
     this.#handles.end.setAttribute('stroke', 'green');
@@ -122,12 +121,17 @@ export class TileSelector {
     return this;
   }
 
-
   insertAt(tile) {
+    this.render();
+
     this.setStartPoint({
       x: +tile.dataset.x,
       y: +tile.dataset.y,
     });
+
+    this.updateSelection();
+
+    this.emitRange();
   }
 
   remove() {
@@ -147,33 +151,25 @@ export class TileSelector {
     }
 
     if (!this.endPoint || this.endPoint.x === null) {
-      this.setEndPoint({ x: x + 1, y: y + 1 });
+      this.setEndPoint({ x: x + this.#unitSize, y: y + this.#unitSize });
     }
-
-    this.updateSelection();
 
     return this;
   }
 
   setEndPoint({ x, y }) {
-
     this.#points.end = {
       x: +x || null,
       y: +y || null,
     }
 
-    this.updateSelection();
-
     return this;
   }
 
   resetPoints() {
-    // this.#points = {
-    //   start: { x: null, y: null },
-    //   end: { x: null, y: null },
-    // }
     this.setStartPoint({ x: null, y: null })
     this.setEndPoint({ x: null, y: null })
+
     return this;
   }
 
@@ -197,37 +193,35 @@ export class TileSelector {
     }
 
     return (to.x + to.y) - (from.x + from.y);
-    // return (startSum > endSum) ? startSum - endSum : endSum - startSum;
   }
 
   onDragHandle(e) {
     const handle = e.target.closest('.selection-handle');
+
     if (!handle) return;
 
-    const { clientX, clientY } = e;
-    const pt = this.domPoint(clientX, clientY)
+    const pt = this.domPoint(e.clientX, e.clientY);
 
+    if (!validatePoint(pt)) return;
 
-
-    if (handle.dataset.handle === 'start' &&
-      validatePoint(pt) 
-      // && this.getDistance(pt, this.startPoint) >= 1
-    ) {
-      this.setStartPoint(this.domPoint(clientX, clientY));
-    }
-    else if (validatePoint(pt) && this.getDistance(this.startPoint, pt) >= 1) {
-      this.setEndPoint(this.domPoint(clientX, clientY));
+    if (handle.dataset.handle === 'start' && this.getDistance(this.endPoint, pt) <= -this.#unitSize) {
+      this.setStartPoint(pt);
     }
 
-    console.log('this.getDistance(pt, this.startPoint)', this.getDistance(this.startPoint, pt))
-    console.warn('this.selectedDistance', this.selectedDistance)
+    else if (this.getDistance(this.startPoint, pt) >= this.#unitSize) {
+      this.setEndPoint(pt);
+    }
+
+    this.updateSelection();
+  }
+
+  onDragEnd(e) {
     this.emitRange()
   }
 
   emitRange() {
-    this.#self.dispatchEvent(new CustomEvent('selection', { bubbles: true, detail: { start: this.startPoint, end: this.endPoint } }))
+    this.emit('selection', { start: this.startPoint, end: this.endPoint })
   }
-
 }
 
 

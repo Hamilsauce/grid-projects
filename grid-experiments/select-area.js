@@ -1,11 +1,7 @@
-// import {Board} from './board.js';
 import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
 const { DOM, date, array, utils, text } = ham;
 import { TileSelector, getTileSelector } from './SelectionBox.js';
 import { DetailPanel } from './view/detail-panel.view.js';
-
-const vec1 = {x: 0}
-console.log('+vec1.x', !isNaN(+vec1.x) ? true : false)
 
 let currentPanel;
 let currentSelection;
@@ -13,6 +9,7 @@ let currentSelection;
 export class UnitBoundingBox extends DOMRect {
   constructor(context, x = 0, y = 0, width = 0, height = 0) {
     super(x, y, width, height);
+   
     this.ctx = context;
     this.normalize()
   }
@@ -135,23 +132,17 @@ const drawStart = (e) => {
   startP = adjustedPoint;
   isDrawing = true;
   scene.dataset.isDrawing = true;
-  // currentSelector = drawRect(adjustedPoint, 1, '#FFFFFF20', 'selection')
-
-  // scene.appendChild(currentSelector);
 };
 
-const selectionChange = ({ detail }) => {
-  const { start, end } = detail;
-  console.log('start, end ', start, end )
+const selectionChange = ({start, end}) => {
   getTiles().forEach((t, i) => {
     const unitTile = t.getBoundingClientRect();
-    // const selBbox = currentSelector.getBoundingClientRect();
-
-    if (!(
-        +t.dataset.y + 5 > start.y ||
-        +t.dataset.x - 5 < selBbox.x ||
-        +t.dataset.y - 5 < start.y ||
-        +t.dataset.x + 5 > end.x
+ 
+    if ((
+        +t.dataset.x >= start.x &&
+        +t.dataset.x < end.x &&
+        +t.dataset.y >= start.y &&
+        +t.dataset.y < end.y
       )) {
       t.dataset.selected = true;
     }
@@ -163,13 +154,9 @@ const drawMove = (e) => {
   const p = domPoint(scene, e.clientX, e.clientY);
   const adjustedPoint = roundPoint(p);
 
-  console.log('adjustedPoint', adjustedPoint)
-
   if (isDrawing) {
     currentSelector.width.baseVal.value = adjustedPoint.x - startP.x;
     currentSelector.height.baseVal.value = adjustedPoint.y - startP.y;
-    console.log('selectionBox.boundingBox', selectionBox.boundingBox)
-    // selectionBox.setEndPoint(adjustedPoint)
 
     getTiles().forEach((t, i) => {
       const unitTile = t.getBoundingClientRect();
@@ -248,6 +235,10 @@ const viewBox = canvas.viewBox;
 
 const selectionBox = getTileSelector(scene);
 
+selectionBox.on('selection', range => {
+  selectionChange(range)
+  console.warn('HEARD SELECTBOX EMIT SELECTION RANGE IN APP, RANGE: ', range);
+});
 
 let startP;
 let currentSelector;
@@ -273,33 +264,12 @@ const unitBbox = new UnitBoundingBox(scene)
 
 scene.append(selectionBox.dom);
 
-// canvas.addEventListener('pointerdown', e => {
-//   drawStart(e);
-// });
-
-// canvas.addEventListener('pointermove', e => {
-//   drawMove(e);
-// });
-
-// canvas.addEventListener('pointerup', e => {
-//   drawStop(e);
-// });
-
 canvas.addEventListener('click', e => {
   e.stopPropagation();
   e.preventDefault();
 
   handleTileClick(e);
 });
-
-canvas.addEventListener('selection', e => {
-  e.stopPropagation();
-  e.preventDefault();
-  selectionChange(e)
-  // console.log('selection heard in app', e.detail);
-  // handleTileClick(e);
-});
-
 
 renderTiles(tileContainer, 10, 20);
 
