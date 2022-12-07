@@ -95,7 +95,6 @@ body {
 }
 
 #grid-options {
-  /* position: relative; */
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
@@ -105,19 +104,7 @@ body {
   height: 100%;
   padding: 8px;
   border: 1px solid #FFFFFF;
-  /* overflow: visible; */
-  /* z-index: 590; */
 }
-
-/* #grid-options-toggle.app-button {
-  padding: 4px;
-  font-size: 18px;
-  z-index: 101;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-
-} */
 
 .grid-option {
   display: flex;
@@ -125,8 +112,6 @@ body {
   justify-content: flex-start;
   align-items: flex-start;
   gap: 0px;
-  /* width: 100%; */
-  /* height: 100%; */
 }
 
 .grid-option label {
@@ -135,9 +120,6 @@ body {
   justify-content: flex-start;
   align-items: center;
   gap: 0px;
-
-  /* width: 100%; */
-  /* height: 100%; */
   font-size: 13px;
 }
 
@@ -149,18 +131,9 @@ body {
   gap: 0px;
   width: 50px;
   padding: 4px 4px;
-  /* height: 100%; */
 }
 
-/* #grid-options[data-show-menu=true] #grid-options-menu {} */
-
-
-
 #controls {
-  /* display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: flex-start; */
   display: grid;
   grid-template-columns: repeat(4, 1fr);
 
@@ -229,7 +202,7 @@ body {
   background: #191A2040;
   width: 100%;
   padding: 4px;
-/* min-width:100vw;min-height:100vh; */
+  /* min-width:100vw;min-height:100vh; */
   height: 100%;
 }
 

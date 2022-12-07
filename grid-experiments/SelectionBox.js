@@ -165,6 +165,7 @@ export class TileSelector extends EventEmitter {
 
     return this;
   }
+  
 
   resetPoints() {
     this.setStartPoint({ x: null, y: null })
