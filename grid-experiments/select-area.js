@@ -6,6 +6,24 @@ import { DetailPanel } from './view/detail-panel.view.js';
 let currentPanel;
 let currentSelection;
 
+const State = {
+  tileContainer: document.querySelector('#tile-container'),
+  _selection: null,
+  get selection() { return this._selection },
+  set selection(v) {
+    if (Array.isArray(v) && Array.isArray(this._selection)) {
+      const deselected = this._selection.filter(t => !v.includes(t))
+
+      deselected.forEach((t, i) => {
+        t.dataset.selected = false;
+      });
+    }
+
+    this._selection = v;
+  }
+}
+
+
 export class UnitBoundingBox extends DOMRect {
   constructor(context, x = 0, y = 0, width = 0, height = 0) {
     super(x, y, width, height);
@@ -44,7 +62,9 @@ const roundPoint = (p, dir = 'floor') => {
 const translateElement = (svg, el, point) => {
   const elTransforms = el.transform.baseVal
   const translate = svg.createSVGTransform();
+
   elTransforms.clear();
+  
   translate.setTranslate(point.x, point.y);
   elTransforms.appendItem(translate);
 };
@@ -52,22 +72,13 @@ const translateElement = (svg, el, point) => {
 const drawRect = (p, s = 1, fill = 'black', className = 'tile', dataset) => {
   const rect = document.createElementNS(SVG_NS, 'rect');
   rect.classList.add(className);
-  // Object.assign(rect.dataset, p);
-  rect.dataset.x = p.x
-  rect.dataset.y = p.y
+  rect.dataset.x = p.x;
+  rect.dataset.y = p.y;
   rect.dataset.selected = false;
 
   translateElement(canvas, rect, p);
 
-  // rect.setAttribute('height', s);
-  // rect.setAttribute('width', s);
-  // rect.width.baseVal.value = s;
-  // rect.height.baseVal.value = s;
-  // rect.setAttribute('stroke-width', 0.025);
-
-  // if (dataset) {}
-
-  return rect
+  return rect;
 };
 
 const renderTiles = (container, w = 10, h = 20) => {
@@ -119,6 +130,8 @@ const getTileAtPoint = (contextEl = scene, e) => {
 
 const getTiles = () => [...document.querySelectorAll('.tile')];
 
+const tileAt = (x, y) => State.tileContainer.querySelector(`.tile[data-y="${y}"][data-x="${x}"]`);
+
 const initScene = (svg = new SVGSVGElement, scene = new SVGPathElement()) => {
   const sceneTransforms = scene.transform.baseVal;
   const translate = svg.createSVGTransform();
@@ -129,90 +142,32 @@ const initScene = (svg = new SVGSVGElement, scene = new SVGPathElement()) => {
   surface.height.baseVal.value = 20;
 };
 
+const getRange = ({ start, end }) => {
+  const tileContainer = document.querySelector('#tile-container');
+  let range = [];
 
-const drawStart = (e) => {
-  if (currentSelector) {
-    currentSelector.remove();
-    currentSelector = null;
-  };
+  for (let y = start.y; y < end.y; y++) {
+    for (let x = start.x; x < end.x; x++) {
+      const tile = tileAt(x, y);
 
-  const p = domPoint(scene, e.clientX, e.clientY);
-  const adjustedPoint = roundPoint(p, 'floor');
+      tile.dataset.selected = true;
 
-  startP = adjustedPoint;
-  isDrawing = true;
-  scene.dataset.isDrawing = true;
-};
-
-const selectionChange = ({ start, end }) => {
-  getTiles().forEach((t, i) => {
-
-    const unitTile = t.getBoundingClientRect();
-
-    if (
-      +t.dataset.x >= start.x &&
-      +t.dataset.x < end.x &&
-      +t.dataset.y >= start.y &&
-      +t.dataset.y < end.y
-    ) {
-      t.dataset.selected = true;
+      range.push(tile);
     }
-    else { t.dataset.selected = false; }
-  });
-}
-
-const drawMove = (e) => {
-  const p = domPoint(scene, e.clientX, e.clientY);
-  const adjustedPoint = roundPoint(p);
-
-  if (isDrawing) {
-    currentSelector.width.baseVal.value = adjustedPoint.x - startP.x;
-    currentSelector.height.baseVal.value = adjustedPoint.y - startP.y;
-
-    getTiles().forEach((t, i) => {
-      const unitTile = t.getBoundingClientRect();
-      const selBbox = currentSelector.getBoundingClientRect();
-
-      if (!(
-          unitTile.top + 5 > selBbox.bottom ||
-          unitTile.right - 5 < selBbox.left ||
-          unitTile.bottom - 5 < selBbox.top ||
-          unitTile.left + 5 > selBbox.right
-        )) {
-        t.dataset.selected = true;
-      }
-      else { t.dataset.selected = false; }
-    });
   }
-};
 
-const drawStop = (e) => {
-  const bbox = currentSelector.getBoundingClientRect();
-  let { width, height } = bbox;
-
-  width = Math.floor((width / pixelScale));
-  height = Math.floor(height / pixelScale);
-  isDrawing = false;
-  scene.dataset.isDrawing = false;
-
-  selectedRect = Object.assign(bbox, roundPoint(domPoint(canvas, bbox.x, bbox.y)), { width, height });
-
-  let endpoint = roundPoint(domPoint(scene, e.clientX, e.clientY));
-
-  selectionVector = [
-    { x: startP.x - 1, y: startP.y - 1 },
-    {
-      x: endpoint.x - selectedRect.x,
-      y: endpoint.y - selectedRect.y,
-    }
-  ];
-
-  startP = null;
-};
+  return range;
+}
 
 const handleTileClick = (e) => {
   const currFocused = [...document.querySelectorAll('rect[data-focused="true"]')];
   const activePanel = document.querySelector('.panel');
+  const selectedTiles = document.querySelectorAll('.tile[data-selected="true"]');
+
+  selectedTiles.forEach((t, i) => {
+    t.dataset.selected = false;
+  });
+
   const tile = getTileAtPoint(scene, e);
 
   if (activePanel && currentPanel && currentPanel instanceof DetailPanel) {
@@ -243,18 +198,13 @@ const tileContainer = scene.querySelector('#tile-container');
 const surface = scene.querySelector('#surface');
 const viewBox = canvas.viewBox;
 
+
 const selectionBox = getTileSelector(scene);
 
 selectionBox.on('selection', range => {
-  selectionChange(range)
-  // console.warn('HEARD SELECTBOX EMIT SELECTION RANGE IN APP, RANGE: ', range);
+  State.selection = getRange(range)
 });
 
-let startP;
-let currentSelector;
-let isDrawing = false;
-let selectedRect = null;
-let selectionVector;
 let pixelScale;
 
 canvas.style.width = window.innerWidth + 'px';
@@ -283,14 +233,6 @@ canvas.addEventListener('click', e => {
 
 console.time('RENDER TILES');
 renderTiles(tileContainer, 10, 20);
-// renderTilesArray(tileContainer, 10, 20);
-// renderTilesDocFrag(tileContainer, 10, 20);
 console.timeEnd('RENDER TILES');
 
 initScene(canvas, scene);
-
-getTiles().forEach((t, i) => {
-  t.addEventListener('pointerleave', e => {
-    console.warn('pointerleave', { x: +e.target.dataset.x, y: +e.target.dataset.y });
-  });
-});

@@ -36,7 +36,7 @@ export class TileSelector extends EventEmitter {
     this.#unitSize = options.unitSize ? options.unitSize : this.#unitSize;
 
     this.#self = document.createElementNS(SVG_NS, 'g');
-this.#self.classList.add('tile-selector');
+    this.#self.classList.add('tile-selector');
     this.#selectionBox = document.createElementNS(SVG_NS, 'rect');
 
     const start = document.createElementNS(SVG_NS, 'circle');
