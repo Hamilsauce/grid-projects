@@ -15,6 +15,7 @@ const validatePoints = (...points) => {
 export class TileSelector extends EventEmitter {
   #self;
   #selectionBox;
+  #dragTargetHandle;
   #unitSize = 1;
   #points = {
     start: { x: null, y: null },
@@ -52,13 +53,12 @@ export class TileSelector extends EventEmitter {
 
     this.init();
 
+    this.dragStartHandler = this.onDragStart.bind(this)
     this.dragHandler = this.onDragHandle.bind(this)
     this.dragEndHandler = this.onDragEnd.bind(this)
 
-    this.#handles.start.addEventListener('pointermove', this.dragHandler);
-    this.#handles.start.addEventListener('pointerup', this.dragEndHandler);
-    this.#handles.end.addEventListener('pointermove', this.dragHandler);
-    this.#handles.end.addEventListener('pointerup', this.dragEndHandler);
+    this.#handles.start.addEventListener('pointerdown', this.dragStartHandler);
+    this.#handles.end.addEventListener('pointerdown', this.dragStartHandler);
   }
 
   get parent() { return this.#self.parentElement };
@@ -165,7 +165,6 @@ export class TileSelector extends EventEmitter {
 
     return this;
   }
-  
 
   resetPoints() {
     this.setStartPoint({ x: null, y: null })
@@ -193,35 +192,60 @@ export class TileSelector extends EventEmitter {
       return null;
     }
 
-    return (to.x + to.y) - (from.x + from.y);
+    return Math.abs(Math.ceil((to.x - from.x) + (to.y - from.y) / 2));
+  }
+
+  onDragStart(e) {
+    const handle = e.target.closest('.selection-handle');
+
+    if (handle) {
+      this.#dragTargetHandle = handle;
+      this.parent.addEventListener('pointermove', this.dragHandler);
+      this.parent.addEventListener('pointerup', this.dragEndHandler);
+    }
   }
 
   onDragHandle(e) {
-    const handle = e.target.closest('.selection-handle');
-
-    if (!handle) return;
+    if (!this.#dragTargetHandle) return;
+   
+    const handle = this.#dragTargetHandle;
 
     const pt = this.domPoint(e.clientX, e.clientY);
 
     if (!validatePoint(pt)) return;
 
-    if (handle.dataset.handle === 'start' && this.getDistance(this.endPoint, pt) <= -this.#unitSize) {
+    if (
+      handle.dataset.handle === 'start' &&
+      (pt.x - this.endPoint.x) < 0 &&
+      (pt.y - this.endPoint.y) < 0 &&
+      this.getDistance(this.endPoint, pt) >= this.#unitSize
+    ) {
       this.setStartPoint(pt);
     }
 
-    else if (this.getDistance(this.startPoint, pt) >= this.#unitSize) {
+    else if (
+      handle.dataset.handle === 'end' &&
+      (pt.x - this.startPoint.x) > 0 &&
+      (pt.y - this.startPoint.y) > 0
+    ) {
       this.setEndPoint(pt);
     }
 
     this.updateSelection();
+    
+    this.emitRange();
   }
 
   onDragEnd(e) {
-    this.emitRange()
+    this.parent.removeEventListener('pointermove', this.dragHandler);
+    this.parent.removeEventListener('pointerup', this.dragEndHandler);
+    this.#dragTargetHandle = null;
+
+    this.emitRange();
   }
 
   emitRange() {
-    this.emit('selection', { start: this.startPoint, end: this.endPoint })
+    this.emit('selection', { start: this.startPoint, end: this.endPoint });
   }
 }
 

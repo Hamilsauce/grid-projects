@@ -86,6 +86,7 @@ const getPointOnBoard = (contextEl = scene, e) => {
 
 const getTileAtPoint = (contextEl = scene, e) => {
   const point = getPointOnBoard(contextEl, e);
+
   const targetTile = getTiles()
     .find((t, i) => {
       const unitTile = {
@@ -136,6 +137,7 @@ const drawStart = (e) => {
 
 const selectionChange = ({start, end}) => {
   getTiles().forEach((t, i) => {
+    
     const unitTile = t.getBoundingClientRect();
  
     if ((
