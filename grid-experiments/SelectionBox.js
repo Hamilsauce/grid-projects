@@ -36,7 +36,7 @@ export class TileSelector extends EventEmitter {
     this.#unitSize = options.unitSize ? options.unitSize : this.#unitSize;
 
     this.#self = document.createElementNS(SVG_NS, 'g');
-
+this.#self.classList.add('tile-selector');
     this.#selectionBox = document.createElementNS(SVG_NS, 'rect');
 
     const start = document.createElementNS(SVG_NS, 'circle');
@@ -101,7 +101,7 @@ export class TileSelector extends EventEmitter {
     this.#self.append(this.#selectionBox);
 
     this.#handles.start.setAttribute('r', 0.33);
-    this.#handles.start.setAttribute('fill', 'orange');
+    this.#handles.start.setAttribute('fill', 'white');
     this.#handles.start.setAttribute('stroke-width', 0.07);
     this.#handles.start.setAttribute('stroke', 'green');
 
@@ -200,6 +200,7 @@ export class TileSelector extends EventEmitter {
 
     if (handle) {
       this.#dragTargetHandle = handle;
+      handle.dataset.isDragging = true;
       this.parent.addEventListener('pointermove', this.dragHandler);
       this.parent.addEventListener('pointerup', this.dragEndHandler);
     }
@@ -207,7 +208,7 @@ export class TileSelector extends EventEmitter {
 
   onDragHandle(e) {
     if (!this.#dragTargetHandle) return;
-   
+
     const handle = this.#dragTargetHandle;
 
     const pt = this.domPoint(e.clientX, e.clientY);
@@ -232,13 +233,14 @@ export class TileSelector extends EventEmitter {
     }
 
     this.updateSelection();
-    
+
     this.emitRange();
   }
 
   onDragEnd(e) {
     this.parent.removeEventListener('pointermove', this.dragHandler);
     this.parent.removeEventListener('pointerup', this.dragEndHandler);
+    this.#dragTargetHandle.dataset.isDragging = false;
     this.#dragTargetHandle = null;
 
     this.emitRange();

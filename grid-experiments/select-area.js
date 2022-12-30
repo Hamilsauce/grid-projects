@@ -9,7 +9,7 @@ let currentSelection;
 export class UnitBoundingBox extends DOMRect {
   constructor(context, x = 0, y = 0, width = 0, height = 0) {
     super(x, y, width, height);
-   
+
     this.ctx = context;
     this.normalize()
   }
@@ -44,38 +44,47 @@ const roundPoint = (p, dir = 'floor') => {
 const translateElement = (svg, el, point) => {
   const elTransforms = el.transform.baseVal
   const translate = svg.createSVGTransform();
-  elTransforms.clear()
+  elTransforms.clear();
   translate.setTranslate(point.x, point.y);
   elTransforms.appendItem(translate);
 };
 
-const drawRect = (p, s = 1, fill = 'black', className = 'tile') => {
+const drawRect = (p, s = 1, fill = 'black', className = 'tile', dataset) => {
   const rect = document.createElementNS(SVG_NS, 'rect');
-  rect.style.fill = fill;
   rect.classList.add(className);
+  // Object.assign(rect.dataset, p);
+  rect.dataset.x = p.x
+  rect.dataset.y = p.y
   rect.dataset.selected = false;
-  rect.width.baseVal.value = s
-  rect.height.baseVal.value = s
-  rect.setAttribute('stroke', '#2A2B2CD1')
-  rect.setAttribute('stroke-width', 0.025)
 
-  translateElement(canvas, rect, p)
+  translateElement(canvas, rect, p);
+
+  // rect.setAttribute('height', s);
+  // rect.setAttribute('width', s);
+  // rect.width.baseVal.value = s;
+  // rect.height.baseVal.value = s;
+  // rect.setAttribute('stroke-width', 0.025);
+
+  // if (dataset) {}
+
   return rect
 };
 
 const renderTiles = (container, w = 10, h = 20) => {
+  const tiles = []
   for (let i = 0; i < h; i++) {
     for (let j = 0; j < w; j++) {
-      const tile = drawRect({ x: j, y: i }, 1, '#FFFFFF')
-      tile.dataset.y = i;
-      tile.dataset.x = j;
-      container.appendChild(tile)
+      const tile = drawRect({ x: j, y: i }, 1, '#FFFFFF');
+
+      tiles.push(tile)
     }
   }
+
+  append(...tiles)
 }
 
-const appendTile = (tile) => {
-  tileContainer.appendChild(tile)
+const append = (...tiles) => {
+  tileContainer.append(...tiles)
 }
 
 const getPointOnBoard = (contextEl = scene, e) => {
@@ -135,17 +144,17 @@ const drawStart = (e) => {
   scene.dataset.isDrawing = true;
 };
 
-const selectionChange = ({start, end}) => {
+const selectionChange = ({ start, end }) => {
   getTiles().forEach((t, i) => {
-    
+
     const unitTile = t.getBoundingClientRect();
- 
-    if ((
-        +t.dataset.x >= start.x &&
-        +t.dataset.x < end.x &&
-        +t.dataset.y >= start.y &&
-        +t.dataset.y < end.y
-      )) {
+
+    if (
+      +t.dataset.x >= start.x &&
+      +t.dataset.x < end.x &&
+      +t.dataset.y >= start.y &&
+      +t.dataset.y < end.y
+    ) {
       t.dataset.selected = true;
     }
     else { t.dataset.selected = false; }
@@ -208,7 +217,6 @@ const handleTileClick = (e) => {
 
   if (activePanel && currentPanel && currentPanel instanceof DetailPanel) {
     activePanel.remove();
-    // scene.removeChild(activePanel);
   }
 
   if (tile && tile.dataset.focused === 'true') {
@@ -239,7 +247,7 @@ const selectionBox = getTileSelector(scene);
 
 selectionBox.on('selection', range => {
   selectionChange(range)
-  console.warn('HEARD SELECTBOX EMIT SELECTION RANGE IN APP, RANGE: ', range);
+  // console.warn('HEARD SELECTBOX EMIT SELECTION RANGE IN APP, RANGE: ', range);
 });
 
 let startP;
@@ -273,7 +281,11 @@ canvas.addEventListener('click', e => {
   handleTileClick(e);
 });
 
+console.time('RENDER TILES');
 renderTiles(tileContainer, 10, 20);
+// renderTilesArray(tileContainer, 10, 20);
+// renderTilesDocFrag(tileContainer, 10, 20);
+console.timeEnd('RENDER TILES');
 
 initScene(canvas, scene);
 
