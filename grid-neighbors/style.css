@@ -213,6 +213,13 @@ body {
   /* transition: 0.075s ease; */
 }
 
+.tile[data-tile-type=barrier] {
+  background: #343639;
+  border: 0.25px solid #68686800;
+  transition: 0.075s ease;
+}
+
+
 .tile[data-selected=true] {
   /* background: #FFEE05; */
   border: 0.25px solid #68686800;

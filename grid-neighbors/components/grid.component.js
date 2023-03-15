@@ -1,7 +1,7 @@
 import { DIRECTIONS } from '../../lib/Constants.js';
 import { TileView } from './tile.component.js';
 
-const { forkJoin, Observable, iif, BehaviorSubject, AsyncSubject, Subject, interval, of , fromEvent, merge, empty, delay, from } = rxjs;
+const { forkJoin, Observable, iif, BehaviorSubject, AsyncSubject, Subject, interval, of, fromEvent, merge, empty, delay, from } = rxjs;
 const { distinctUntilChanged, flatMap, reduce, groupBy, toArray, mergeMap, switchMap, scan, map, tap, filter } = rxjs.operators;
 const { fromFetch } = rxjs.fetch;
 
@@ -38,11 +38,11 @@ export class Range {
 */
 
 export class GridView {
-  constructor(dims, pushEventsFn) {
+  constructor(dims, savedTiles) {
     this.dims = dims
     this.tiles = new Map();
 
-    this.createGrid(dims)
+    this.createGrid(dims,savedTiles)
 
     this.clickHandler = this.handleClick.bind(this);
 
@@ -75,7 +75,7 @@ export class GridView {
   }
 
   // set dims({ width, height, tilesize }) {
-    
+
   //   return this.dims.width
   // }
 
@@ -175,37 +175,44 @@ export class GridView {
       .reduce((neighbors, [dirName, { y, x }]) => {
         const conditional = false
         const n = document.querySelector(`[data-address="${[tileY + y, tileX + x].toString()}"]`);
+        const type = n ? n.dataset.tileType : null;
 
-        return !n ? neighbors : { ...neighbors, [dirName]: n }
+        return !n || type === 'barrier' ? neighbors : { ...neighbors, [dirName]: n }
       }, {})
   }
-  
-  
+
+
 
   update(type, update) {
     console.warn('update', update)
-    Object.assign(this.dims, {[update.name]: update.value})
+    Object.assign(this.dims, {
+      [update.name]: update.value })
     console.warn('this.dims', this.dims)
-  
-   this.createGrid(this.dims)
+
+    this.createGrid(this.dims)
     // if (type === 'dims') {
-      
+
     // }
   }
-  
+
   createGrid(dims, savedTiles) {
     this.tiles.clear();
     this.self.innerHTML = '';
 
     this.setGridSize(dims);
+    // if (savedTiles) {
 
-    for (let y = 0; y < dims.height; y++) {
-      for (let col = 0; col < dims.width; col++) {
-        this.insertTile(y, col, 'empty');
+    // } else {
+    console.log('savedTiles', savedTiles)
+      for (let y = 0; y < dims.height; y++) {
+        for (let col = 0; col < dims.width; col++) {
+        const type = savedTiles && savedTiles[y][col] ? savedTiles[y][col].type : 'empty'
+          this.insertTile(y, col, type);
+        }
       }
-    }
 
-    this.self.append(...[...this.tiles.values()]);
+      this.self.append(...[...this.tiles.values()]);
+    // }
   }
 
   getRangeVector(rangeAddress) {
@@ -419,6 +426,7 @@ export class GridView {
   insertTile(y, x, type) {
     const t = document.createElement('div');
     t.classList.add('tile');
+    t.dataset.tileType = type
     t.dataset.address = [y, x].toString();
 
     this.tiles.set(

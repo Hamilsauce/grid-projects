@@ -1,10 +1,11 @@
 import { GridView } from './components/grid.component.js';
 import { movesKeys$ } from './store/movement-keys.state.js';
+import { map10x10 } from './maps/map10x10-1.js';
 import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
 
-const { template, utils,DOM } = ham;
+const { template, utils, DOM } = ham;
 
-const { forkJoin, Observable, iif, BehaviorSubject, AsyncSubject, Subject, interval, of , fromEvent, merge, empty, delay, from } = rxjs;
+const { forkJoin, Observable, iif, BehaviorSubject, AsyncSubject, Subject, interval, of, fromEvent, merge, empty, delay, from } = rxjs;
 const { flatMap, reduce, groupBy, toArray, mergeMap, switchMap, scan, map, tap, filter } = rxjs.operators;
 const { fromFetch } = rxjs.fetch;
 
@@ -84,6 +85,8 @@ overlayGrid.id = 'overlay-grid'
 
 appbody.innerHTML = ''
 
+
+
 const dims = {
   width: 10,
   height: 10,
@@ -95,8 +98,7 @@ appbody.append(
   overlayGrid,
 );
 
-
-const grid = new GridView(dims);
+const grid = new GridView(dims, map10x10.tiles);
 
 appShell.addEventListener('option:change', ({ detail }) => {
   const { name, value } = detail
