@@ -79,6 +79,8 @@ const appBody = document.querySelector('#app-body')
 const canvas = document.querySelector('#canvas');
 const scene = document.querySelector('#scene');
 const tileLayer = scene.querySelector('#tile-layer');
+const actor1 = scene.querySelector('#actor1');
+const actor2 = scene.querySelector('#actor2');
 
 const { forkJoin, Observable, iif, BehaviorSubject, AsyncSubject, Subject, interval, of, fromEvent, merge, empty, delay, from } = rxjs;
 const { flatMap, reduce, groupBy, toArray, mergeMap, switchMap, scan, map, tap, filter } = rxjs.operators;
@@ -112,26 +114,27 @@ graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
   }))
 });
 
-
+let isMoving = false;
 canvas.addEventListener('click', e => {
+  if (isMoving) return;
   const tile = e.target.closest('.tile');
 
   const pathNodes = canvas.querySelectorAll('.tile[data-is-path-node="true"]');
-  
+
   pathNodes.forEach((el, i) => { el.dataset.isPathNode = false });
 
 
   if (tile && tile.dataset.tileType !== 'barrier') {
     const activeTiles = canvas.querySelectorAll('.tile[data-active="true"]');
-    
+
     const highlightedTiles = canvas.querySelectorAll('.tile[data-highlight="true"]');
 
     activeTiles.forEach((el, i) => { el.dataset.active = false });
-    
+
     highlightedTiles.forEach((el, i) => { el.dataset.highlight = false });
 
     const pt = { x: +tile.dataset.x, y: +tile.dataset.y }
-    
+
     const tileNode = graph.getNodeAtPoint(pt);
 
     const neighbors = graph.getNeighbors(tileNode);
@@ -149,7 +152,7 @@ canvas.addEventListener('click', e => {
   const goalNodeEl = canvas.querySelector('.tile[data-active="true"]');
 
   const startNode = graph.getNodeAtPoint({ x: +startNodeEl.dataset.x, y: +startNodeEl.dataset.y });
-  
+
   const targetNode = graph.getNodeAtPoint({ x: +goalNodeEl.dataset.x, y: +goalNodeEl.dataset.y });
 
   const dfsPath = graph.getPath(startNode, targetNode)
@@ -172,25 +175,31 @@ canvas.addEventListener('click', e => {
   path.reverse();
   curr = path[pointer];
 
-  let intervalHandle = setInterval(() => {
-    curr = path[pointer];
-    if (!curr) {
-      clearInterval(intervalHandle);
-    }
-
-    else {
-      const el = canvas.querySelector(`.tile[data-x="${curr.x}"][data-y="${curr.y}"]`);
-
-      if (el === startNodeEl) {
-        startNodeEl.dataset.current = false;
+  isMoving = true;
+ 
+  if (isMoving) {
+    let intervalHandle = setInterval(() => {
+      curr = path[pointer];
+      if (!curr) {
+        clearInterval(intervalHandle);
+        isMoving = false;
       }
 
-      el.dataset.isPathNode = curr.isPathNode;
-      
-      pointer++;
-    }
-  }, 75)
+      else {
+        const el = canvas.querySelector(`.tile[data-x="${curr.x}"][data-y="${curr.y}"]`);
+        actor1.setAttribute('transform', `translate(${curr.x-1},${curr.y-1})`)
+        console.log('actor1', actor1)
+        if (el === startNodeEl) {
+          startNodeEl.dataset.current = false;
+        }
 
-  goalNodeEl.dataset.active = false;
-  goalNodeEl.dataset.current = true;
+        el.dataset.isPathNode = curr.isPathNode;
+
+        pointer++;
+      }
+    }, 75)
+
+    goalNodeEl.dataset.active = false;
+    goalNodeEl.dataset.current = true;
+  }
 });

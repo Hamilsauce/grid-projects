@@ -130,3 +130,8 @@ body {
 .tile[data-tile-type=goal] text {
   fill: var(--tiletext-light);
 }
+
+
+#actor1 {
+  transition: 0.15s ease-out;
+}
