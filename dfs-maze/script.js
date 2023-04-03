@@ -2,12 +2,67 @@ import { Graph } from './lib/store.js';
 import { MAP_9X15_1 } from './maps.js';
 
 import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
-const { template, utils, download, TwoWayMap } = ham;
 
+const { template, utils, download, TwoWayMap } = ham;
 
 const graph = new Graph(MAP_9X15_1);
 
 // console.log('graph', graph)
+
+export class SVGCanvas {
+  #self = null;
+  constructor(svg) {
+    this.#self = svg;
+
+  }
+
+  get dom() { return this.#self }
+
+  domPoint(x, y) {
+    return new DOMPoint(x, y).matrixTransform(
+      this.dom.getScreenCTM().inverse()
+    );
+  }
+
+  createRect({ classList, width, height, x, y, text, dataset }) {
+    const g = document.createElementNS(SVG_NS, 'g');
+    const r = document.createElementNS(SVG_NS, 'rect');
+
+    Object.assign(g.dataset, dataset);
+
+    g.setAttribute('transform', `translate(${dataset.x},${dataset.y})`);
+
+    r.setAttribute('width', width);
+
+    r.setAttribute('height', height);
+
+    g.classList.add(...(classList || ['tile']));
+
+    g.id = 'rect' + utils.uuid();
+
+    g.append(r);
+
+    if (text) {
+      g.append(createText({ textContent: text }));
+    }
+
+    return g;
+  }
+
+  createText({ textContent }) {
+    const textNode = document.createElementNS(SVG_NS, 'text');
+    textNode.style.fontSize = '0.0175rem';
+    textNode.style.textAlign = 'center';
+    textNode.textContent = textContent;
+    textNode.setAttribute('transform', 'translate(0.3,0.60)');
+
+    return textNode;
+  };
+
+
+}
+
+
 
 const domPoint = (element, x, y) => {
   return new DOMPoint(x, y).matrixTransform(
@@ -18,8 +73,9 @@ const domPoint = (element, x, y) => {
 const createRect = ({ classList, width, height, x, y, text, dataset }) => {
   const g = document.createElementNS(SVG_NS, 'g');
   const r = document.createElementNS(SVG_NS, 'rect');
-  // console.log('dataset', dataset)
+
   Object.assign(g.dataset, dataset);
+
   g.setAttribute('transform', `translate(${dataset.x},${dataset.y})`);
 
   r.setAttribute('width', width);
@@ -27,6 +83,8 @@ const createRect = ({ classList, width, height, x, y, text, dataset }) => {
   r.setAttribute('height', height);
 
   g.classList.add(...(classList || ['tile']));
+
+  g.id = 'rect' + utils.uuid();
 
   g.append(r);
 
@@ -71,8 +129,6 @@ const getAspectRatio = (canvas) => {
   return width / height;
 };
 
-
-
 const app = document.querySelector('#app');
 const appBody = document.querySelector('#app-body')
 
@@ -88,12 +144,10 @@ const { flatMap, reduce, groupBy, toArray, mergeMap, switchMap, scan, map, tap, 
 const pointerDown$ = fromEvent(canvas, 'click')
 
 pointerDown$.pipe(
-    map(({ target, clientX, clientY }) => {
-      return domPoint(canvas, clientX, clientY)
-    }),
-    // tap(x => console.log('TAP', x)),
-  )
-  .subscribe()
+  map(({ target, clientX, clientY }) => {
+    return domPoint(canvas, clientX, clientY)
+  }),
+).subscribe()
 
 
 const { width, height } = scene.getBoundingClientRect()
@@ -115,6 +169,7 @@ graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
 });
 
 let isMoving = false;
+
 canvas.addEventListener('click', e => {
   if (isMoving) return;
   const tile = e.target.closest('.tile');
@@ -176,7 +231,7 @@ canvas.addEventListener('click', e => {
   curr = path[pointer];
 
   isMoving = true;
- 
+
   if (isMoving) {
     let intervalHandle = setInterval(() => {
       curr = path[pointer];
