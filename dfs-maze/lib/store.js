@@ -138,12 +138,42 @@ export class Graph {
     return this.shortestPathDfs(node, stopNode)
   };
 
+  toLinkedList(lastNode) {
+    let pointer = 0;
+    let curr = lastNode;
+    let path = [];
+
+    while (curr) {
+      let previous = curr.previous
+      if (previous) {
+        previous.next = curr;
+        delete curr.previous
+      }
+      curr = previous;
+    }
+
+    return curr;
+  };
+
+  pathToQueue(lastNode) {
+    let pointer = 0;
+    let curr = lastNode;
+    let path = [];
+
+    while (curr) {
+      let previous = curr.previous
+      path.push(curr);
+      curr = previous;
+    }
+
+    path.reverse();
+    curr = path[pointer];
+  };
+
 
   shortestPathDfs(node, stopNode) { //node = this.startNode, stopNode = this.goalNode) {
     node.isPathNode = true;
     node.isVisited = true;
-
-    if (node.address === '5,5') {}
 
     if (node === stopNode) {
       return node;

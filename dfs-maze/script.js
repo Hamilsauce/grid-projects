@@ -56,7 +56,6 @@ const createText = ({ textContent }) => {
   const textNode = document.createElementNS(SVG_NS, "text");
   textNode.style.fontSize = '0.0175rem';
   textNode.setAttribute('width', 1)
-  // textNode.style.textAlign = 'center';
   textNode.setAttribute('text-anchor', 'middle')
   textNode.textContent = textContent;
   textNode.setAttribute('transform', 'translate(0.5,0.6)');
@@ -197,16 +196,19 @@ canvas.addEventListener('click', ({ detail }) => {
 
   const targetNode = graph.getNodeAtPoint({ x: +targetNodeEl.dataset.x, y: +targetNodeEl.dataset.y });
 
-  const dfsPath = graph.getPath(startNode, targetNode)
+  const dfsPath = graph.getPath(startNode, targetNode);
 
+  // const linkedList = graph.toLinkedList(dfsPath)
+// console.log('linkedList', linkedList)
   let oppositeDirMap = new TwoWayMap([
     ['up', 'down'],
     ['left', 'right'],
   ]);
 
   let pointer = 0;
-  let curr = dfsPath
-  let path = []
+  let curr = dfsPath;
+
+  let path = [];
 
   while (curr) {
     let previous = curr.previous
@@ -223,6 +225,7 @@ canvas.addEventListener('click', ({ detail }) => {
   if (isMoving) {
     let intervalHandle = setInterval(() => {
       curr = path[pointer];
+      
       if (!curr) {
         clearInterval(intervalHandle);
         isMoving = false;
@@ -231,7 +234,7 @@ canvas.addEventListener('click', ({ detail }) => {
 
       else {
         const el = canvas.querySelector(`.tile[data-x="${curr.x}"][data-y="${curr.y}"]`);
-        actor1.setAttribute('transform', `translate(${curr.x},${curr.y})`)
+        actor1.setAttribute('transform', `translate(${curr.x},${curr.y})`);
 
         if (el === startNodeEl) {
           startNodeEl.dataset.current = false;
@@ -249,6 +252,7 @@ canvas.addEventListener('click', ({ detail }) => {
           console.warn('----- TARGET FOUND -----');
         }
       }
+      console.log('interval');
     }, 75)
 
     targetNodeEl.dataset.active = false;
