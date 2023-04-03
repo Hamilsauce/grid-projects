@@ -7,6 +7,8 @@
 
 .tile text {
   fill: var(--tiletext-dark);
+  filter: opacity(0.5);
+  font-weight: 600;
 }
 
 .tile[data-tile-type=barrier] rect {

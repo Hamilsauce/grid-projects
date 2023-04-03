@@ -19,17 +19,17 @@
 <body>
   <div id="app">
     <header id="app-header">
-      <div id="app-header-left">L</div>
+      <div id="app-header-left"></div>
       <div id="app-header-center">
         <h1>Shortest Path</h1>
       </div>
-      <div id="app-header-right">R</div>
+      <div id="app-header-right"></div>
     </header>
     <section id="app-body">
       <svg id="canvas" style="background:#2B35A5;" width="412" height="681" viewBox="-0 -0 9 15" preserveAspectRatio="xMidYMin meet" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <g id="circle-container" transform="translate(1,1) rotate(0) scale(1)">
-            <circle id="circle-template" fill="teal" cx="0" cy="0" r="0.4" stroke="#000000" stroke-width="0.05" transform="translate(0,0) rotate(0) scale(1)" />
+          <g data-template="actor" id="" class="actor" transform="translate(1,1) rotate(0) scale(1)">
+            <circle cx="0" cy="0" r="0.4" transform="translate(0,0) rotate(0) scale(1)" />
           </g>
         </defs>
         <g id="scene" transform="translate(0,0) rotate(0) scale(1)">
@@ -39,14 +39,11 @@
 
           <g id="tile-layer" transform="translate(-0,-0) rotate(0) scale(1)"></g>
 
-          <g id="object-layer" transform="translate(0.5,0.5) rotate(0) scale(1)">
-            <use id="actor1" href="#circle-container"></use>
-            <!-- <circle id="actor2" fill="teal" cx="0" cy="0" r="0.4" stroke="#000000" stroke-width="0.05" transform="translate(0,0) rotate(0) scale(1)" /> -->
-          </g>
+          <g id="object-layer" transform="translate(0.5,0.5) rotate(0) scale(1)"></g>
         </g>
       </svg>
     </section>
-  
+
     <footer id="app-footer">
       <div class="container">
         footer
