@@ -1,6 +1,6 @@
 import { Graph } from './lib/store.js';
 import { SVGCanvas } from './lib/SVGCanvas.js';
-import { MAP_9X15_1 } from './maps.js';
+import { MAP_9X15_1, BLANK_MAP_9X15_1 } from './maps.js';
 
 import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
 
@@ -9,7 +9,8 @@ const { template, utils, download, TwoWayMap } = ham;
 const { forkJoin, Observable, iif, BehaviorSubject, AsyncSubject, Subject, interval, of, fromEvent, merge, empty, delay, from } = rxjs;
 const { flatMap, reduce, groupBy, toArray, mergeMap, switchMap, scan, map, tap, filter } = rxjs.operators;
 
-const graph = new Graph(MAP_9X15_1);
+const graph = new Graph(BLANK_MAP_9X15_1);
+// const graph = new Graph(MAP_9X15_1);
 
 
 
@@ -93,6 +94,7 @@ const canvasEl = document.querySelector('#canvas');
 const canvas = new SVGCanvas(canvasEl)
 const scene = document.querySelector('#scene');
 const tileLayer = scene.querySelector('#tile-layer');
+const mapInput = document.querySelector('#map-input');
 const objectLayer = scene.querySelector('#object-layer');
 
 const actor1 = useTemplate('actor');
@@ -121,7 +123,37 @@ Object.assign(SVGCanvas.prototype, Mixin)
 //   canvasViewBox
 // });
 
+const mapInput$ = fromEvent(mapInput, 'change')
 const pointerDown$ = fromEvent(canvas, 'click')
+
+mapInput$.pipe(
+  tap(x => console.warn('CANVAS pointerDown$', x)),
+  tap(({ target }) => {
+    const sel = target.selectedOptions[0]
+    graph.fromMap(sel === 'BLANK_MAP_9X15_1' ? BLANK_MAP_9X15_1 : MAP_9X15_1)
+    tileLayer.innerHTML = ''
+    graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
+      if (tileType === 'start') {
+        actor1.setAttribute('transform', `translate(${x},${y})`);
+
+      }
+      
+      tileLayer.append(
+        createRect({
+          width: 1,
+          height: 1,
+          text: `${x},${y}`,
+          classList: ['tile'],
+          dataset: {
+            tileType,
+            x: x,
+            y: y,
+          },
+        }))
+    });
+
+  }),
+).subscribe()
 
 pointerDown$.pipe(
   tap(x => console.warn('CANVAS pointerDown$', x)),
@@ -199,7 +231,7 @@ canvas.addEventListener('click', ({ detail }) => {
   const dfsPath = graph.getPath(startNode, targetNode);
 
   // const linkedList = graph.toLinkedList(dfsPath)
-// console.log('linkedList', linkedList)
+  // console.log('linkedList', linkedList)
   let oppositeDirMap = new TwoWayMap([
     ['up', 'down'],
     ['left', 'right'],
@@ -225,7 +257,7 @@ canvas.addEventListener('click', ({ detail }) => {
   if (isMoving) {
     let intervalHandle = setInterval(() => {
       curr = path[pointer];
-      
+
       if (!curr) {
         clearInterval(intervalHandle);
         isMoving = false;
