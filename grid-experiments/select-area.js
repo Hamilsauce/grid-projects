@@ -9,10 +9,11 @@ let currentSelection;
 const State = {
   tileContainer: document.querySelector('#tile-container'),
   _selection: null,
-  get selection() { return this._selection },
+  isSelecting: false,
+  get selection() { return this._selection; },
   set selection(v) {
     if (Array.isArray(v) && Array.isArray(this._selection)) {
-      const deselected = this._selection.filter(t => !v.includes(t))
+      const deselected = this._selection.filter(t => !v.includes(t));
 
       deselected.forEach((t, i) => {
         t.dataset.selected = false;
@@ -21,50 +22,49 @@ const State = {
 
     this._selection = v;
   }
-}
-
+};
 
 export class UnitBoundingBox extends DOMRect {
   constructor(context, x = 0, y = 0, width = 0, height = 0) {
     super(x, y, width, height);
 
     this.ctx = context;
-    this.normalize()
+    this.normalize();
   }
 
   static roundPoint(p, dir = 'floor') {
-    return { x: dir === 'floor' ? Math.floor(p.x) : Math.ceil(p.x), y: dir === 'floor' ? Math.floor(p.y) : Math.ceil(p.y) }
+    return { x: dir === 'floor' ? Math.floor(p.x) : Math.ceil(p.x), y: dir === 'floor' ? Math.floor(p.y) : Math.ceil(p.y) };
   }
 
   normalize() {
-    Object.assign(this, UnitBoundingBox.roundPoint(this.domPoint(this.x, this.y)))
-    this.width = this.width / this.ctx.closest('svg').viewBox.baseVal.width
-    this.height = this.height / this.ctx.closest('svg').viewBox.baseVal.height
+    Object.assign(this, UnitBoundingBox.roundPoint(this.domPoint(this.x, this.y)));
+    this.width = this.width / this.ctx.closest('svg').viewBox.baseVal.width;
+    this.height = this.height / this.ctx.closest('svg').viewBox.baseVal.height;
   }
 
   domPoint(x, y) {
     return new DOMPoint(x, y).matrixTransform(
       this.ctx.getScreenCTM().inverse()
-    )
+    );
   }
 }
 
 const domPoint = (element, x, y) => {
   return new DOMPoint(x, y).matrixTransform(
     element.getScreenCTM().inverse()
-  )
+  );
 };
 
 const roundPoint = (p, dir = 'floor') => {
-  return { x: dir === 'floor' ? Math.floor(p.x) : Math.ceil(p.x), y: dir === 'floor' ? Math.floor(p.y) : Math.ceil(p.y) }
+  return { x: dir === 'floor' ? Math.floor(p.x) : Math.ceil(p.x), y: dir === 'floor' ? Math.floor(p.y) : Math.ceil(p.y) };
 };
 
 const translateElement = (svg, el, point) => {
-  const elTransforms = el.transform.baseVal
+  const elTransforms = el.transform.baseVal;
   const translate = svg.createSVGTransform();
 
   elTransforms.clear();
-  
+
   translate.setTranslate(point.x, point.y);
   elTransforms.appendItem(translate);
 };
@@ -82,27 +82,27 @@ const drawRect = (p, s = 1, fill = 'black', className = 'tile', dataset) => {
 };
 
 const renderTiles = (container, w = 10, h = 20) => {
-  const tiles = []
+  const tiles = [];
   for (let i = 0; i < h; i++) {
     for (let j = 0; j < w; j++) {
       const tile = drawRect({ x: j, y: i }, 1, '#FFFFFF');
 
-      tiles.push(tile)
+      tiles.push(tile);
     }
   }
 
-  append(...tiles)
-}
+  append(...tiles);
+};
 
 const append = (...tiles) => {
-  tileContainer.append(...tiles)
-}
+  tileContainer.append(...tiles);
+};
 
 const getPointOnBoard = (contextEl = scene, e) => {
   const p = domPoint(scene, e.clientX, e.clientY);
-  const adjustedPoint = roundPoint(p, 'floor')
-  return adjustedPoint
-}
+  const adjustedPoint = roundPoint(p, 'floor');
+  return adjustedPoint;
+};
 
 const getTileAtPoint = (contextEl = scene, e) => {
   const point = getPointOnBoard(contextEl, e);
@@ -112,7 +112,7 @@ const getTileAtPoint = (contextEl = scene, e) => {
       const unitTile = {
         x: t.x.baseVal.value,
         y: t.y.baseVal.value,
-      }
+      };
 
       return +t.dataset.x == point.x && +t.dataset.y == point.y;
       return unitTile.x == point.x && unitTile.y == point.y;
@@ -122,11 +122,13 @@ const getTileAtPoint = (contextEl = scene, e) => {
         point.x < unitTile.left ||
         point.y < unitTile.top ||
         point.x > unitTile.right
-      )
+      );
     });
 
   return targetTile;
-}
+};
+
+const getTileAtScenePoint = (e) => getTileAtPoint(scene, e);
 
 const getTiles = () => [...document.querySelectorAll('.tile')];
 
@@ -157,9 +159,13 @@ const getRange = ({ start, end }) => {
   }
 
   return range;
-}
+};
 
 const handleTileClick = (e) => {
+  const isPanelClick = e.target.classList.contains('content-container') || e.target.classList.contains('panel-content');
+
+  if (isPanelClick) return;
+
   const currFocused = [...document.querySelectorAll('rect[data-focused="true"]')];
   const activePanel = document.querySelector('.panel');
   const selectedTiles = document.querySelectorAll('.tile[data-selected="true"]');
@@ -168,7 +174,7 @@ const handleTileClick = (e) => {
     t.dataset.selected = false;
   });
 
-  const tile = getTileAtPoint(scene, e);
+  const tile = getTileAtScenePoint(e);
 
   if (activePanel && currentPanel && currentPanel instanceof DetailPanel) {
     activePanel.remove();
@@ -183,12 +189,25 @@ const handleTileClick = (e) => {
       t.dataset.focused = false;
     });
 
-    currentPanel = new DetailPanel(tile);
-
     tile.dataset.focused = true;
+    selectionBox.insertAt(tile);
+  }
+};
+
+const handleContextMenu = (e) => {
+  const currFocused = [...document.querySelectorAll('rect[data-focused="true"]')][0];
+  const activePanel = document.querySelector('.panel');
+
+  const tile = getTileAtScenePoint(e);
+
+  if (activePanel && currentPanel && currentPanel instanceof DetailPanel) {
+    activePanel.remove();
+  }
+
+  else if (tile) {
+    currentPanel = new DetailPanel(currFocused);
 
     currentPanel.appendTo(scene);
-    selectionBox.insertAt(tile)
   }
 };
 
@@ -202,7 +221,8 @@ const viewBox = canvas.viewBox;
 const selectionBox = getTileSelector(scene);
 
 selectionBox.on('selection', range => {
-  State.selection = getRange(range)
+  State.selection = getRange(range);
+  State.isSelecting = true;
 });
 
 let pixelScale;
@@ -210,7 +230,7 @@ let pixelScale;
 canvas.style.width = window.innerWidth + 'px';
 canvas.style.height = window.innerHeight + 'px';
 
-const canvasBBox = canvas.getBoundingClientRect()
+const canvasBBox = canvas.getBoundingClientRect();
 
 Object.assign(viewBox.baseVal, {
   x: -(5),
@@ -219,16 +239,33 @@ Object.assign(viewBox.baseVal, {
   height: (20),
 });
 
-pixelScale = canvasBBox.width / viewBox.baseVal.width
-const unitBbox = new UnitBoundingBox(scene)
+pixelScale = canvasBBox.width / viewBox.baseVal.width;
+const unitBbox = new UnitBoundingBox(scene);
 
 scene.append(selectionBox.dom);
 
-canvas.addEventListener('click', e => {
+canvas.addEventListener('click', (e = new PointerEvent('pointerdown')) => {
+  if (e.metaKey) {
+    console.log('metaKey NEWBS');
+  }
+
   e.stopPropagation();
   e.preventDefault();
 
-  handleTileClick(e);
+  if (!State.isSelecting) {
+    handleTileClick(e);
+  }
+
+  State.isSelecting = false;
+});
+
+document.addEventListener('keydown', e => {
+  console.log(' [ KEY PRESS ]: ', e.metaKey);
+});
+
+canvas.addEventListener('contextmenu', e => {
+  console.log(' [ CONTEXT MENU ]: ', e);
+  handleContextMenu(e);
 });
 
 console.time('RENDER TILES');

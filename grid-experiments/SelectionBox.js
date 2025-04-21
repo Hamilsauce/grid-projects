@@ -5,11 +5,11 @@ const { template, utils } = ham;
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 const validatePoint = ({ x, y }) => {
-  return !isNaN(+x) && !isNaN(+y) ? true : false
+  return !isNaN(+x) && !isNaN(+y) ? true : false;
 };
 
 const validatePoints = (...points) => {
-  return points.every(point => validatePoint(point))
+  return points.every(point => validatePoint(point));
 };
 
 export class TileSelector extends EventEmitter {
@@ -39,10 +39,7 @@ export class TileSelector extends EventEmitter {
     this.#self.classList.add('tile-selector');
     this.#selectionBox = document.createElementNS(SVG_NS, 'rect');
 
-    const start = document.createElementNS(SVG_NS, 'circle');
-    start.classList.add('selection-handle');
-    start.dataset.handle = 'start';
-    start.id = 'start-handle';
+    const start = this.createSelectionHandle();
 
     const end = document.createElementNS(SVG_NS, 'circle');
     end.classList.add('selection-handle');
@@ -53,44 +50,77 @@ export class TileSelector extends EventEmitter {
 
     this.init();
 
-    this.dragStartHandler = this.onDragStart.bind(this)
-    this.dragHandler = this.onDragHandle.bind(this)
-    this.dragEndHandler = this.onDragEnd.bind(this)
+    this.dragStartHandler = this.onDragStart.bind(this);
+    this.dragHandler = this.onDragHandle.bind(this);
+    this.dragEndHandler = this.onDragEnd.bind(this);
 
+    this.#handles.start.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      e.preventDefault();
+    });
+
+    this.#handles.end.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+    });
     this.#handles.start.addEventListener('pointerdown', this.dragStartHandler);
     this.#handles.end.addEventListener('pointerdown', this.dragStartHandler);
+
+    window.selectionBox = this;
   }
 
-  get parent() { return this.#self.parentElement };
+  get isSelecting() { return Object.values(this.#handles).some((handle) => handle.dataset.isDragging === 'true'); };
 
-  get isRendered() { return !!this.parent };
+  get parent() { return this.#self.parentElement; };
 
-  get dom() { return this.#self };
+  get isRendered() { return !!this.parent; };
 
-  get startPoint() { return this.#points.start };
+  get dom() { return this.#self; };
 
-  get endPoint() { return this.#points.end };
+  get startPoint() { return this.#points.start; };
 
-  get boundingBox() { return this.#selectionBox.getBoundingClientRect() };
+  get endPoint() { return this.#points.end; };
 
-  get width() { return this.endPoint.x - this.startPoint.x || this.#unitSize }
+  get boundingBox() { return this.#selectionBox.getBoundingClientRect(); };
 
-  get height() { return this.endPoint.y - this.startPoint.y || this.#unitSize }
+  get width() { return this.endPoint.x - this.startPoint.x || this.#unitSize; }
 
-  get x() { return +this.#selectionBox.getAttribute('x') }
+  get height() { return this.endPoint.y - this.startPoint.y || this.#unitSize; }
 
-  get y() { return +this.#selectionBox.getAttribute('y') }
+  get x() { return +this.#selectionBox.getAttribute('x'); }
+
+  get y() { return +this.#selectionBox.getAttribute('y'); }
 
   get selectedDistance() {
-    return this.getDistance(this.startPoint, this.endPoint)
+    return this.getDistance(this.startPoint, this.endPoint);
   }
 
   domPoint(x, y, dir = 'floor') {
     const p = new DOMPoint(x, y).matrixTransform(
       this.ctx.getScreenCTM().inverse()
-    )
+    );
 
-    return { x: dir === 'floor' ? Math.floor(p.x) : Math.ceil(p.x), y: dir === 'floor' ? Math.floor(p.y) : Math.ceil(p.y) }
+    return { x: dir === 'floor' ? Math.floor(p.x) : Math.ceil(p.x), y: dir === 'floor' ? Math.floor(p.y) : Math.ceil(p.y) };
+  }
+
+  createSelectionHandle() {
+    const startHandleGroup = document.createElementNS(SVG_NS, 'g');
+    startHandleGroup.classList.add('selection-handle');
+    startHandleGroup.dataset.handle = 'start';
+    startHandleGroup.id = 'start-handle';
+
+    const startHandle = document.createElementNS(SVG_NS, 'circle');
+    startHandle.classList.add('selection-handle');
+    startHandle.dataset.handle = 'start';
+    startHandle.id = 'start-handle';
+
+    const startHandleBox = document.createElementNS(SVG_NS, 'rect');
+    startHandleBox.classList.add('selection-handle-box');
+
+    startHandleGroup.append(startHandle);
+    return startHandle;
+    return startHandleGroup;
   }
 
   init() {
@@ -148,7 +178,7 @@ export class TileSelector extends EventEmitter {
     this.#points.start = {
       x: +x,
       y: +y,
-    }
+    };
 
     if (!this.endPoint || this.endPoint.x === null) {
       this.setEndPoint({ x: x + this.#unitSize, y: y + this.#unitSize });
@@ -161,14 +191,14 @@ export class TileSelector extends EventEmitter {
     this.#points.end = {
       x: +x || null,
       y: +y || null,
-    }
+    };
 
     return this;
   }
 
   resetPoints() {
-    this.setStartPoint({ x: null, y: null })
-    this.setEndPoint({ x: null, y: null })
+    this.setStartPoint({ x: null, y: null });
+    this.setEndPoint({ x: null, y: null });
 
     return this;
   }
