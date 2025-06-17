@@ -41,13 +41,13 @@ function draw_grid(height, width) {
 
 function square_pointerenter(event) {
   let elem = event.target;
-  console.log('square_pointerenter', elem)
+  // console.log('square_pointerenter', elem)
   elem.classList.add("highlight");
   draw_path(elem);
 }
 
 function square_pointerleave(event) {
-  console.log('square_pointerleave', event.target)
+  // console.log('square_pointerleave', event.target)
   event.target.classList.remove("highlight");
 }
 
@@ -65,7 +65,7 @@ function square_click(event) {
 
   }
 
-  console.log('grid.style.touchAction AFTER CKICKER', grid.style.touchAction)
+  // console.log('grid.style.touchAction AFTER CKICKER', grid.style.touchAction)
 }
 
 function clear_path() {

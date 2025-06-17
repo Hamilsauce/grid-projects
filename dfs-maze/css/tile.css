@@ -20,15 +20,15 @@
 }
 
 .tile[data-is-path-node=true] rect {
-  fill: #DFFFB382;
+  fill: #FFF2B382;
   /* filter: hue-rotate(45deg); */
 }
 
 .tile[data-is-path-node=true] text {
-  fill: #E9C71C;
-  stroke: #000000;
+  fill: #373736;
+  /* stroke: #000000; */
   font-weight: 900;
-  stroke-width: 0.015px;
+  /* stroke-width: 0.015px; */
 
   /* filter: invert(1); */
 }
@@ -83,4 +83,12 @@
 .tile[data-tile-type=goal] text {
   fill: var(--tiletext-light);
 }
+
+.tile[data-tile-type=teleport] rect {
+  fill: #12B582;
+}
+
+/* .tile[data-tile-type=teleport] text {
+  fill: var(--tiletext-light);
+} */
 

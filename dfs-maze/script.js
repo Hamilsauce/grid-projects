@@ -1,6 +1,6 @@
 import { Graph } from './lib/store.js';
 import { SVGCanvas } from './lib/SVGCanvas.js';
-import { MAP_9X15_1, BLANK_MAP_9X15_1 } from './maps.js';
+import { MAP_9X15_1, BLANK_MAP_9X15_1, maps } from './maps.js';
 
 import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
 
@@ -9,10 +9,10 @@ const { template, utils, download, TwoWayMap } = ham;
 const { forkJoin, Observable, iif, BehaviorSubject, AsyncSubject, Subject, interval, of, fromEvent, merge, empty, delay, from } = rxjs;
 const { flatMap, reduce, groupBy, toArray, mergeMap, switchMap, scan, map, tap, filter } = rxjs.operators;
 
-const graph = new Graph(BLANK_MAP_9X15_1);
+const graph = new Graph(maps.BIG_ASS_MAP);
 // const graph = new Graph(MAP_9X15_1);
 
-
+console.warn('graph', graph.nodes)
 
 const domPoint = (element, x, y) => {
   return new DOMPoint(x, y).matrixTransform(
@@ -105,7 +105,7 @@ objectLayer.setAttribute('transform', 'translate(0,0) rotate(0) scale(1)')
 const sceneBCR = scene.getBoundingClientRect();
 const sceneBBox = scene.getBBox();
 const canvasViewBox = canvas.viewBox;
-
+setCanvasDimensions(canvas.dom)
 
 const Mixin = {
   shit() {
@@ -114,6 +114,12 @@ const Mixin = {
 }
 
 Object.assign(SVGCanvas.prototype, Mixin)
+Object.assign(canvasViewBox, {
+  x: 0, // -(graph.width / 2),
+  y: 0, // -(graph.height / 2),
+  width: graph.width,
+  height: graph.height
+})
 
 // console.warn({
 //   sceneBCR,
@@ -127,9 +133,16 @@ const pointerDown$ = fromEvent(canvas, 'click')
 mapInput$.pipe(
   tap(x => console.warn('CANVAS pointerDown$')),
   tap(({ target }) => {
-    const sel = target.selectedOptions[0]
-    
-    graph.fromMap(sel === 'BLANK_MAP_9X15_1' ? BLANK_MAP_9X15_1 : MAP_9X15_1)
+    const sel = target.selectedOptions[0].value
+    console.warn('sel', sel)
+    const selectedMap = maps[sel]
+    graph.fromMap(selectedMap)
+    Object.assign(canvasViewBox, {
+      x: 0, // -(graph.width / 2),
+      y: 0, // -(graph.height / 2),
+      width: graph.width,
+      height: graph.height
+    })
     
     tileLayer.innerHTML = ''
     
@@ -232,6 +245,9 @@ canvas.addEventListener('click', ({ detail }) => {
   console.warn('BFS PATH', dfsPath)
   // const linkedList = graph.toLinkedList(dfsPath)
   // console.log('linkedList', linkedList)
+  if (dfsPath === null) {
+    return
+  }
   let oppositeDirMap = new TwoWayMap([
     ['up', 'down'],
     ['left', 'right'],
@@ -250,7 +266,7 @@ canvas.addEventListener('click', ({ detail }) => {
   
   path.reverse();
   curr = dfsPath[pointer];
-
+  
   isMoving = true;
   actor1.dataset.moving = isMoving;
   
@@ -283,6 +299,23 @@ canvas.addEventListener('click', ({ detail }) => {
         
         if (el === targetNodeEl) {
           console.warn('----- TARGET FOUND -----');
+        }
+        
+        if (el.dataset.tileType === 'teleport') {
+          console.warn('----- TELEPORT FOUND -----');
+          
+          const tels = [...canvas.querySelectorAll('.tile[data-tile-type="teleport"]')]
+          
+          const otherTele = tels.find(t => el != t)
+          otherTele.dataset.active = false;
+          
+          const actorParent = actor1.parentElement
+          actor1.remove();
+          actor1.setAttribute('transform', `translate(${otherTele.dataset.x},${otherTele.dataset.y})`);
+          
+          actorParent.append(actor1)
+          el.dataset.active = true;
+          
         }
       }
       

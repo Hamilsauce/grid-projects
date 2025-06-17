@@ -5,7 +5,8 @@ const TILE_TYPE_INDEX = [
   'empty',
   'barrier',
   'start',
-  'goal'
+  'goal',
+  'teleport',
 ];
 
 const DIRECTIONS = new Map([
@@ -276,5 +277,8 @@ export class Graph {
         this.#nodes.set(node.address, node);
       });
     });
+    
+    this.height = map.length
+    this.width = map[0].length
   }
 }
