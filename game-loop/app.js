@@ -23,7 +23,6 @@ const State = {
   }
 }
 
-
 export class UnitBoundingBox extends DOMRect {
   constructor(context, x = 0, y = 0, width = 0, height = 0) {
     super(x, y, width, height);
@@ -225,7 +224,7 @@ Object.assign(viewBox.baseVal, {
 
 pixelScale = canvasBBox.width / viewBox.baseVal.width
 const unitBbox = new UnitBoundingBox(scene)
-
+console.warn('unitBbox', unitBbox)
 scene.append(selectionBox.dom);
 
 canvas.addEventListener('click', e => {
