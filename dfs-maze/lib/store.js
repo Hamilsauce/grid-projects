@@ -22,22 +22,22 @@ export class GraphNode {
   isPathNode = false;
   isVisited = false;
   previous = null;
-
+  
   constructor({ tileType, x, y }) {
     this.#tileType = tileType;
     this.#point = { x, y };
   }
-
+  
   get tileType() { return this.#tileType }
-
+  
   get isTraversable() { return !['barrier'].includes(this.#tileType) }
-
+  
   get address() { return [this.x, this.y].toString() }
-
+  
   get x() { return this.#point.x }
-
+  
   get y() { return this.#point.y }
-
+  
   toJSON() {
     return {
       tileType: this.tileType,
@@ -55,16 +55,16 @@ export class GraphNode {
 export class Neighbor {
   #node = null;
   #visited = false;
-
+  
   constructor(node, visited = false) {
     this.#node = node;
     this.#visited = visited;
   }
-
+  
   get node() { return this.#node }
-
+  
   get visited() { return this.#visited }
-
+  
   visit() {
     this.#visited = true;
   }
@@ -76,73 +76,74 @@ export class Neighbor {
 export class Graph {
   #nodes = new Map();
   #edges = new Map();
-
+  
   constructor(map = []) {
     if (map && map.length) {
       this.fromMap(map);
     }
   }
-
+  
   get nodes() { return [...this.#nodes.values()]; }
-
+  
   get startNode() { return this.nodes.find(n => n.tileType === 'start'); }
-
+  
   get goalNode() { return this.nodes.find(n => n.tileType === 'goal'); }
-
+  
   get targetNode() { return this.nodes.find(n => n.tileType === 'target'); }
-
+  
   pointToAddress({ x, y }) {
     return [x, y].toString();
   }
-
+  
   addressToPoint(address) {
     return address.split(',').map(_ => +_);
   }
-
+  
   getNodeByAddress(address) {
     return this.#nodes.get(address);
   }
-
+  
   getNodeAtPoint({ x, y }) {
     return this.getNodeByAddress(this.pointToAddress({ x, y }))
   }
-
+  
   getNeighbor(node, dirName = '') {
     const { x, y } = DIRECTIONS.get(dirName);
-
+    
     const n = this.getNodeAtPoint({
       x: node.x + x,
       y: node.y + y,
     });
-
+    
     if (!n || !n.isTraversable) return null;
-
+    
     return n;
   }
-
+  
   getNeighbors(node) {
     const neighborMap = [...DIRECTIONS.keys()]
       .reduce((map, name, i) => {
         return node && this.getNeighbor(node, name) ? map.set(name, this.getNeighbor(node, name)) : map;
       }, new Map());
-
+    
     return neighborMap;
   }
-
+  
   getUnvisitedNeighbors(node) {
     return node ? ([...this.getNeighbors(node).entries()] || []).filter(([k, v]) => v && !v.previous && v.isVisited === false) : [];
   }
-
+  
   getPath(node = this.startNode, stopNode) {
     this.resetPath();
+    return this.bfsShortestPath(node, stopNode)
     return this.shortestPathDfs(node, stopNode)
   };
-
+  
   toLinkedList(lastNode) {
     let pointer = 0;
     let curr = lastNode;
     let path = [];
-
+    
     while (curr) {
       let previous = curr.previous
       if (previous) {
@@ -151,84 +152,119 @@ export class Graph {
       }
       curr = previous;
     }
-
+    
     return curr;
   };
-
+  
   pathToQueue(lastNode) {
     let pointer = 0;
     let curr = lastNode;
     let path = [];
-
+    
     while (curr) {
       let previous = curr.previous
       path.push(curr);
       curr = previous;
     }
-
+    
     path.reverse();
     curr = path[pointer];
   };
-
-
-  shortestPathDfs(node, stopNode) { //node = this.startNode, stopNode = this.goalNode) {
-    node.isPathNode = true;
+  
+  bfsShortestPath(start, goal) {
+    const queue = [
+      [start]
+    ]; // queue of paths
+    const visited = new Set(); // to avoid revisiting nodes
+    
+    while (queue.length > 0) {
+      const path = queue.shift(); // FIFO
+      const node = path[path.length - 1];
+      
+      let unvisitedNeighbors
+      
+      if (node === goal) {
+        return path; // return full path when goal is found
+      }
+      
+      if (!visited.has(node)) {
+        visited.add(node);
+        
+        unvisitedNeighbors = this.getUnvisitedNeighbors(node);
+        
+        for (const [direction, neighbor] of unvisitedNeighbors || []) {
+          queue.push([...path, neighbor]); // enqueue a new path
+        }
+      }
+    }
+    
+    return null; // no path found
+  }
+  
+  
+  
+  
+  
+  shortestPathDfs(node, stopNode) {
+    //node = this.startNode, stopNode = this.goalNode) {
+    // node.isPathNode = true;
     node.isVisited = true;
-
+    
     if (node === stopNode) {
       return node;
     }
-
-
+    
+    
     let unvisitedNeighbors = this.getUnvisitedNeighbors(node);
-
+    
     if (unvisitedNeighbors.length == 0 && node.previous) {
       node.isPathNode = false;
       node.isVisited = true;
       node = node.previous;
-
+      
       unvisitedNeighbors = this.getUnvisitedNeighbors(node);
-
+      
       while (node && unvisitedNeighbors.length === 0) {
         node.isPathNode = false;
         node.isVisited = true;
         node = node.previous;
-
+        
         unvisitedNeighbors = this.getUnvisitedNeighbors(node);
       }
-
+      
       return this.shortestPathDfs(node, stopNode);
     }
-
+    
     else {
       for (let [direction, neighbor] of unvisitedNeighbors) {
         neighbor.previous = node;
-
+        console.warn('direction, neighbor', direction, neighbor)
+        
         if (unvisitedNeighbors.length > 0) {
           return this.shortestPathDfs(neighbor, stopNode);
         }
-
+        
         else {
           return node
         }
       }
     }
     return node; /* If no path, return null */
-  };
-
+  }
+  
   resetPath() {
     this.nodes.forEach((n, i) => {
       n.isVisited = false;
       n.isPathNode = false;
       n.previous = null;
-
+      
     });
   }
-
+  
   fromMap(map = []) {
     const height = map.length;
     const width = map[0].length;
-
+    
     map.forEach((row, rowNumber) => {
       row.forEach((typeId, columnNumber) => {
         const node = new GraphNode({
@@ -236,7 +272,7 @@ export class Graph {
           x: columnNumber,
           y: rowNumber
         });
-
+        
         this.#nodes.set(node.address, node);
       });
     });
