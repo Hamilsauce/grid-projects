@@ -1,4 +1,3 @@
-
 .tile rect {
   fill: #E7E7E7;
   stroke: #B4B4B4A3;
@@ -29,7 +28,7 @@
   /* stroke: #000000; */
   font-weight: 900;
   /* stroke-width: 0.015px; */
-
+  
   /* filter: invert(1); */
 }
 
@@ -47,13 +46,13 @@
   fill: #288ED0;
   fill: #F2CA69;
   stroke: #14CC3A;
-
+  
 }
 
 .tile[data-current=true] rect {
   fill: #288ED0;
   stroke: #C214CC;
-
+  
   /* fill: #F2CA69; */
 }
 
@@ -92,7 +91,7 @@
   fill: #12B582;
 }
 
-/* .tile[data-tile-type=teleport] text {
-  fill: var(--tiletext-light);
-} */
-
+.tile[data-selected=true] {
+  filter: hue-rotate(90deg) invert(1);
+  /* stroke: #FFFFFFC2; */
+}

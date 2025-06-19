@@ -22,7 +22,7 @@ const useTemplate = (templateName, options) => {
   
   delete el.dataset.template;
   
-  el.id = `${templateName}-${utils.uuid()}`;
+  // el.id = `${templateName}-${utils.uuid()}`;
   
   return el;
 };
@@ -49,12 +49,6 @@ const getAspectRatio = (canvas) => {
   return width / height;
 };
 
-const updateStateDisplay = () => {
-  const display = document.querySelector('#app-state-display');
-  
-  
-};
-
 const ANIM_RATE = 75
 
 const app = document.querySelector('#app');
@@ -69,9 +63,9 @@ const mapInput = document.querySelector('#map-input');
 const objectLayer = scene.querySelector('#object-layer');
 
 const actor1 = useTemplate('actor');
-objectLayer.append(actor1);
+const contextMenu = useTemplate('context-menu');
+objectLayer.append(actor1, contextMenu);
 objectLayer.setAttribute('transform', 'translate(0,0) rotate(0) scale(1)')
-
 
 const sceneBCR = scene.getBoundingClientRect();
 const sceneBBox = scene.getBBox();
@@ -104,10 +98,10 @@ const pointerDown$ = fromEvent(canvas, 'click')
 mapInput$.pipe(
   // tap(x => console.warn('CANVAS pointerDown$')),
   tap(({ target }) => {
-    const sel = target.selectedOptions[0].value
+    const sel = target.selectedOptions[0].value;
     
-    const selectedMap = maps[sel]
-    graph.fromMap(selectedMap)
+    const selectedMap = maps[sel];
+    graph.fromMap(selectedMap);
     
     canvas.setViewBox({
       x: 0,
@@ -116,13 +110,12 @@ mapInput$.pipe(
       height: graph.height
     });
     
-    canvas.layers.tile.innerHTML = ''
+    canvas.layers.tile.innerHTML = '';
     
     graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
       if (tileType === 'start') {
         actor1.setAttribute('transform', `translate(${x},${y})`);
       }
-      
       
       canvas.layers.tile.append(
         canvas.createRect({
@@ -157,8 +150,6 @@ const { width, height } = scene.getBoundingClientRect()
 // const tiles = new Array(9 * 15).fill(null).map((_, i) => {})
 
 graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
-  // tileLayer.innerHTML = ''
-  
   tileLayer.append(
     canvas.createRect({
       width: 1,
@@ -180,6 +171,39 @@ let isMoving = false;
 
 
 const goalTile = tileLayer.querySelector('[data-tile-type="goal"]');
+
+canvas.layers.tile.addEventListener('contextmenu', e => {
+  e.preventDefault()
+  e.stopPropagation()
+  
+  const targ = e.target.closest('.tile');
+  
+  targ.dataset.selected = true
+  
+  contextMenu.setAttribute(
+    'transform',
+    `translate(${+targ.dataset.x+1.5},${+targ.dataset.y-2}) rotate(0) scale(0.05)`
+  );
+  
+  contextMenu.dataset.show = true
+  
+  const blurContextMenu = (e) => {
+    if (contextMenu.dataset.show === 'true') {
+      e.preventDefault()
+      e.stopPropagation()
+     targ.dataset.selected = false
+ 
+      contextMenu.dataset.show = false;
+      contextMenu.setAttribute('transform', `translate(0,0) rotate(0) scale(0.05)`);
+      
+      // document.removeEventListener('click', blurContextMenu)
+      canvas.dom.removeEventListener('click', blurContextMenu)
+    }
+  };
+  
+  // document.addEventListener('click', blurContextMenu);
+  canvas.dom.addEventListener('click', blurContextMenu);
+});
 
 canvas.addEventListener('click', async ({ detail }) => {
   if (isMoving) return;
@@ -266,10 +290,12 @@ canvas.addEventListener('click', async ({ detail }) => {
       else {
         const el = canvas.querySelector(`.tile[data-x="${curr.x}"][data-y="${curr.y}"]`);
         
+        actor1.setAttribute(
+          'transform',
+          `translate(${curr.x},${curr.y})`
+        );
         
-        
-        actor1.setAttribute('transform', `translate(${curr.x},${curr.y})`);
-        const isInView = canvas.isInView(curr)
+        const isInView = canvas.isInView(curr);
         // console.warn('isInView', isInView)
         
         // if (!isInView) {
@@ -301,17 +327,7 @@ canvas.addEventListener('click', async ({ detail }) => {
         }
         
         if (el.dataset.tileType === 'teleport') {
-          
-          // let actorParent = actor1.parentElement
-          
-          // if (!actorParent) {
-          //   objectLayer.append(actor1)
-          // }
-          // actor1.remove();
-          // actor1.setAttribute('transform', `translate(${el.dataset.x},${el.dataset.y})`);
           actor1.dataset.teleporting = true;
-          
-          
           
           if (el === startNodeEl) {
             el.dataset.active = false;
@@ -323,44 +339,26 @@ canvas.addEventListener('click', async ({ detail }) => {
           el.dataset.active = true;
           el.dataset.current = true;
           
-          
           const tels = [...canvas.querySelectorAll('.tile[data-tile-type="teleport"]')]
-          
-          // el.dataset.current = false;
           
           const otherTele = tels.find(t => el != t && t.dataset.current != 'true')
           
-          
-          
-          // otherTele.dataset.active = false;
-          // otherTele.dataset.current = false;
-          // el.dataset.active = false;
-          
-          // const actorParent = actor1.parentElement
-          // actor1.remove();
-          // actor1.style.opacity = 0
-          actor1.setAttribute('transform', `translate(${el.dataset.x},${el.dataset.y})`);
-          // actor1.style.opacity = 1
-          
-          // actorParent.append(actor1)
+          actor1.setAttribute(
+            'transform',
+            `translate(${el.dataset.x},${el.dataset.y})`
+          );
           
           el.dataset.active = false;
           el.dataset.current = false;
           
-          
           otherTele.dataset.active = false;
           otherTele.dataset.current = false;
-          await sleep(10)
-          actor1.dataset.teleporting = false;
           
-          // const startNodeEl = canvas.querySelector('.tile[data-current="true"]') || canvas.querySelector('.tile[data-tile-type="start"]');
+          await sleep(10)
+          
+          actor1.dataset.teleporting = false;
         }
       }
-      
-      // console.log('interval');
     }, ANIM_RATE)
-    
-    // targetNodeEl.dataset.active = true;
-    // targetNodeEl.dataset.current = true;
   }
 });
