@@ -1,6 +1,6 @@
 .actor {
   /* opacity: 1; */
-  transition: 0.125s ease-out;
+  /* transition: 0.125s ease-out; */
 }
 
 .actor>* {
@@ -44,5 +44,5 @@
 .actor[data-teleporting=true] * {
   fill: #783BC1;
   r: 0.1;
-  /* transition: 0.005s; */
+  transition: 0.0s;
 }
