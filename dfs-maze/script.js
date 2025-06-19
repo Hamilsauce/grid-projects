@@ -4,15 +4,12 @@ import { MAP_9X15_1, BLANK_MAP_9X15_1, maps } from './maps.js';
 
 import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
 
-const { template, utils, download, TwoWayMap } = ham;
+const { sleep, template, utils, download, TwoWayMap } = ham;
 
 const { forkJoin, Observable, iif, BehaviorSubject, AsyncSubject, Subject, interval, of, fromEvent, merge, empty, delay, from } = rxjs;
 const { flatMap, reduce, groupBy, toArray, mergeMap, switchMap, scan, map, tap, filter } = rxjs.operators;
 
 const graph = new Graph(maps.BIG_ASS_MAP);
-// const graph = new Graph(MAP_9X15_1);
-
-console.warn('graph', graph.nodes)
 
 const domPoint = (element, x, y) => {
   return new DOMPoint(x, y).matrixTransform(
@@ -29,41 +26,6 @@ const useTemplate = (templateName, options) => {
   
   return el;
 };
-
-const createRect = ({ classList, width, height, x, y, text, dataset }) => {
-  const g = document.createElementNS(SVG_NS, 'g');
-  const r = document.createElementNS(SVG_NS, 'rect');
-  
-  Object.assign(g.dataset, dataset);
-  
-  g.setAttribute('transform', `translate(${dataset.x},${dataset.y})`);
-  g.classList.add(...(classList || ['tile']));
-  g.id = 'rect' + utils.uuid();
-  
-  r.setAttribute('width', width);
-  r.setAttribute('height', height);
-  
-  g.append(r);
-  
-  if (text) {
-    g.append(createText({ textContent: text }));
-  }
-  
-  return g;
-};
-
-
-const createText = ({ textContent }) => {
-  const textNode = document.createElementNS(SVG_NS, "text");
-  textNode.style.fontSize = '0.0175rem';
-  textNode.setAttribute('width', 1)
-  textNode.setAttribute('text-anchor', 'middle')
-  textNode.textContent = textContent;
-  textNode.setAttribute('transform', 'translate(0.5,0.6)');
-  
-  return textNode;
-};
-
 
 const setCanvasDimensions = (canvas) => {
   if (canvas.parentElement) {
@@ -87,6 +49,14 @@ const getAspectRatio = (canvas) => {
   return width / height;
 };
 
+const updateStateDisplay = () => {
+  const display = document.querySelector('#app-state-display');
+  
+  
+};
+
+const ANIM_RATE = 75
+
 const app = document.querySelector('#app');
 const appBody = document.querySelector('#app-body')
 
@@ -94,6 +64,7 @@ const canvasEl = document.querySelector('#canvas');
 const canvas = new SVGCanvas(canvasEl)
 const scene = document.querySelector('#scene');
 const tileLayer = scene.querySelector('#tile-layer');
+const surfaceLayer = scene.querySelector('#surface-layer');
 const mapInput = document.querySelector('#map-input');
 const objectLayer = scene.querySelector('#object-layer');
 
@@ -105,7 +76,13 @@ objectLayer.setAttribute('transform', 'translate(0,0) rotate(0) scale(1)')
 const sceneBCR = scene.getBoundingClientRect();
 const sceneBBox = scene.getBBox();
 const canvasViewBox = canvas.viewBox;
-setCanvasDimensions(canvas.dom)
+
+canvas.setViewBox({
+  width: graph.width,
+  height: graph.height
+})
+
+canvas.setCanvasDimensions()
 
 const Mixin = {
   shit() {
@@ -114,12 +91,6 @@ const Mixin = {
 }
 
 Object.assign(SVGCanvas.prototype, Mixin)
-Object.assign(canvasViewBox, {
-  x: 0, // -(graph.width / 2),
-  y: 0, // -(graph.height / 2),
-  width: graph.width,
-  height: graph.height
-})
 
 // console.warn({
 //   sceneBCR,
@@ -131,28 +102,30 @@ const mapInput$ = fromEvent(mapInput, 'change')
 const pointerDown$ = fromEvent(canvas, 'click')
 
 mapInput$.pipe(
-  tap(x => console.warn('CANVAS pointerDown$')),
+  // tap(x => console.warn('CANVAS pointerDown$')),
   tap(({ target }) => {
     const sel = target.selectedOptions[0].value
-    console.warn('sel', sel)
+    
     const selectedMap = maps[sel]
     graph.fromMap(selectedMap)
-    Object.assign(canvasViewBox, {
-      x: 0, // -(graph.width / 2),
-      y: 0, // -(graph.height / 2),
+    
+    canvas.setViewBox({
+      x: 0,
+      y: 0,
       width: graph.width,
       height: graph.height
-    })
+    });
     
-    tileLayer.innerHTML = ''
+    canvas.layers.tile.innerHTML = ''
     
     graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
       if (tileType === 'start') {
         actor1.setAttribute('transform', `translate(${x},${y})`);
       }
       
-      tileLayer.append(
-        createRect({
+      
+      canvas.layers.tile.append(
+        canvas.createRect({
           width: 1,
           height: 1,
           text: `${x},${y}`,
@@ -161,6 +134,9 @@ mapInput$.pipe(
             tileType,
             x: x,
             y: y,
+            current: false,
+            active: false,
+            isPathNode: false,
           },
         }))
     });
@@ -169,7 +145,7 @@ mapInput$.pipe(
 ).subscribe()
 
 pointerDown$.pipe(
-  tap(x => console.warn('CANVAS pointerDown$')),
+  // tap(x => console.warn('CANVAS pointerDown$')),
   // map(({ target, clientX, clientY }) => {
   //   return domPoint(canvas, clientX, clientY)
   // }),
@@ -181,8 +157,10 @@ const { width, height } = scene.getBoundingClientRect()
 // const tiles = new Array(9 * 15).fill(null).map((_, i) => {})
 
 graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
+  // tileLayer.innerHTML = ''
+  
   tileLayer.append(
-    createRect({
+    canvas.createRect({
       width: 1,
       height: 1,
       text: `${x},${y}`,
@@ -191,6 +169,9 @@ graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
         tileType,
         x: x,
         y: y,
+        current: false,
+        active: false,
+        isPathNode: false,
       },
     }))
 });
@@ -200,8 +181,7 @@ let isMoving = false;
 
 const goalTile = tileLayer.querySelector('[data-tile-type="goal"]');
 
-
-canvas.addEventListener('click', ({ detail }) => {
+canvas.addEventListener('click', async ({ detail }) => {
   if (isMoving) return;
   
   const tile = detail.target.closest('.tile');
@@ -242,12 +222,12 @@ canvas.addEventListener('click', ({ detail }) => {
   const targetNode = graph.getNodeAtPoint({ x: +targetNodeEl.dataset.x, y: +targetNodeEl.dataset.y });
   
   const dfsPath = graph.getPath(startNode, targetNode);
-  console.warn('BFS PATH', dfsPath)
   // const linkedList = graph.toLinkedList(dfsPath)
   // console.log('linkedList', linkedList)
   if (dfsPath === null) {
     return
   }
+  
   let oppositeDirMap = new TwoWayMap([
     ['up', 'down'],
     ['left', 'right'],
@@ -271,7 +251,10 @@ canvas.addEventListener('click', ({ detail }) => {
   actor1.dataset.moving = isMoving;
   
   if (isMoving) {
-    let intervalHandle = setInterval(() => {
+    let dx;
+    let dy;
+    
+    let intervalHandle = setInterval(async () => {
       curr = dfsPath[pointer];
       
       if (!curr) {
@@ -283,7 +266,19 @@ canvas.addEventListener('click', ({ detail }) => {
       else {
         const el = canvas.querySelector(`.tile[data-x="${curr.x}"][data-y="${curr.y}"]`);
         
+        
+        
         actor1.setAttribute('transform', `translate(${curr.x},${curr.y})`);
+        const isInView = canvas.isInView(curr)
+        console.warn('isInView', isInView)
+        
+        // if (!isInView) {
+        
+        //   canvas.panViewport({
+        //     x: curr.x - (canvas.viewBox.width / 2),
+        //     y: curr.y - (canvas.viewBox.height / 2),
+        //   })
+        // }
         
         if (el === startNodeEl) {
           startNodeEl.dataset.current = false;
@@ -294,35 +289,78 @@ canvas.addEventListener('click', ({ detail }) => {
         pointer++;
         
         if (el === goalTile) {
-          console.warn('----- GOAL FOUND -----');
+          // console.warn('----- GOAL FOUND -----');
         }
         
         if (el === targetNodeEl) {
-          console.warn('----- TARGET FOUND -----');
+          // console.warn('----- TARGET FOUND -----');
+          el.dataset.active = true;
+          el.dataset.current = true;
+          
+          return
         }
         
         if (el.dataset.tileType === 'teleport') {
-          console.warn('----- TELEPORT FOUND -----');
+          
+          // let actorParent = actor1.parentElement
+          
+          // if (!actorParent) {
+          //   objectLayer.append(actor1)
+          // }
+          // actor1.remove();
+          // actor1.setAttribute('transform', `translate(${el.dataset.x},${el.dataset.y})`);
+          actor1.dataset.teleporting = true;
+          
+          
+          
+          if (el === startNodeEl) {
+            el.dataset.active = false;
+            el.dataset.current = false;
+            
+            return
+          }
+          
+          el.dataset.active = true;
+          el.dataset.current = true;
+          
           
           const tels = [...canvas.querySelectorAll('.tile[data-tile-type="teleport"]')]
           
-          const otherTele = tels.find(t => el != t)
+          // el.dataset.current = false;
+          
+          const otherTele = tels.find(t => el != t && t.dataset.current != 'true')
+          
+          
+          
+          // otherTele.dataset.active = false;
+          // otherTele.dataset.current = false;
+          // el.dataset.active = false;
+          
+          // const actorParent = actor1.parentElement
+          // actor1.remove();
+          // actor1.style.opacity = 0
+          actor1.setAttribute('transform', `translate(${el.dataset.x},${el.dataset.y})`);
+          // actor1.style.opacity = 1
+          
+          // actorParent.append(actor1)
+          
+          el.dataset.active = false;
+          el.dataset.current = false;
+          
+          
           otherTele.dataset.active = false;
+          otherTele.dataset.current = false;
+          await sleep(10)
+          actor1.dataset.teleporting = false;
           
-          const actorParent = actor1.parentElement
-          actor1.remove();
-          actor1.setAttribute('transform', `translate(${otherTele.dataset.x},${otherTele.dataset.y})`);
-          
-          actorParent.append(actor1)
-          el.dataset.active = true;
-          
+          // const startNodeEl = canvas.querySelector('.tile[data-current="true"]') || canvas.querySelector('.tile[data-tile-type="start"]');
         }
       }
       
-      console.log('interval');
-    }, 75)
+      // console.log('interval');
+    }, ANIM_RATE)
     
-    targetNodeEl.dataset.active = false;
-    targetNodeEl.dataset.current = true;
+    // targetNodeEl.dataset.active = true;
+    // targetNodeEl.dataset.current = true;
   }
 });

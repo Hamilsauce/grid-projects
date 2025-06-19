@@ -46,11 +46,15 @@
 .tile[data-active=true] rect {
   fill: #288ED0;
   fill: #F2CA69;
+  stroke: #14CC3A;
+
 }
 
 .tile[data-current=true] rect {
   fill: #288ED0;
-  fill: #F2CA69;
+  stroke: #C214CC;
+
+  /* fill: #F2CA69; */
 }
 
 .tile[data-active=true][data-is-path-node=false] text {

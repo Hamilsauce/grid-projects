@@ -1,6 +1,7 @@
 import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
 import { createCustomEvent } from './create-event.js';
-const { template, utils, download, TwoWayMap } = ham;
+
+const { addPanAction, template, utils, download, TwoWayMap } = ham;
 
 const { forkJoin, Observable, iif, BehaviorSubject, AsyncSubject, Subject, interval, of, fromEvent, merge, empty, delay, from } = rxjs;
 const { flatMap, reduce, groupBy, toArray, mergeMap, switchMap, scan, map, tap, filter } = rxjs.operators;
@@ -8,12 +9,29 @@ const { flatMap, reduce, groupBy, toArray, mergeMap, switchMap, scan, map, tap, 
 
 export class SVGCanvas extends EventTarget {
   #self = null;
-
+  
   constructor(svg) {
     super();
-
+    
     this.#self = svg;
-
+    
+    this.surfaceLayer = this.dom.querySelector('#surface-layer')
+    
+    this.surface = this.surfaceLayer.querySelector('#surface')
+    
+    this.layers = {
+      surface: this.dom.querySelector('#surface-layer'),
+      tile: this.dom.querySelector('#tile-layer'),
+      object: this.dom.querySelector('#object-layer'),
+    }
+    
+    this.panAction$ = addPanAction(this.dom, (vb) => {
+      // console.log(vb)
+      this.panViewport(vb)
+    })
+    
+    this.panAction$.subscribe()
+    
     this.clickDOM$ = fromEvent(this.#self, 'click')
       .pipe(
         tap(e => {
@@ -21,12 +39,12 @@ export class SVGCanvas extends EventTarget {
           e.stopPropagation();
         }),
       );
-
+    
     this.eventEmits$ = this.clickDOM$
       .pipe(
         map(({ type, target, clientX, clientY }) => {
           const point = this.domPoint(clientX, clientY)
-
+          
           return {
             type,
             detail: {
@@ -39,86 +57,143 @@ export class SVGCanvas extends EventTarget {
         map(({ type, detail }) => createCustomEvent(type, detail)),
         tap((event) => this.dispatchEvent(event)),
       );
-
+    
     this.clickDOMSubscription = this.eventEmits$.subscribe();
   }
-
+  
   get dom() { return this.#self }
-
+  
+  get parentElement() { return this.#self.parentElement }
+  
   get viewBox() { return this.#self.viewBox.baseVal }
-
+  
+  get viewport() { return this.dom.getBoundingClientRect(); }
   
   domPoint(x, y) {
     return new DOMPoint(x, y).matrixTransform(
       this.dom.getScreenCTM().inverse()
-    );
+    )
   }
-
+  
+  
   createDOM(type, { classList, width, height, x, y, text, dataset }) {
     const g = document.createElementNS(SVG_NS, 'g');
     const el = document.createElementNS(SVG_NS, type);
-
+    
     Object.assign(g.dataset, dataset);
     
     g.setAttribute('transform', `translate(${dataset.x},${dataset.y})`);
     g.classList.add(...(classList || ['tile']));
     g.id = 'rect' + utils.uuid();
-
+    
     r.setAttribute('width', width);
     r.setAttribute('height', height);
-
+    
     g.append(r);
-
+    
     if (text) {
       g.append(createText({ textContent: text }));
     }
-
+    
     return g;
   }
   
   createRect({ classList, width, height, x, y, text, dataset }) {
     const g = document.createElementNS(SVG_NS, 'g');
     const r = document.createElementNS(SVG_NS, 'rect');
-
+    
     Object.assign(g.dataset, dataset);
     g.setAttribute('transform', `translate(${dataset.x},${dataset.y})`);
     g.classList.add(...(classList || ['tile']));
     g.id = 'rect' + utils.uuid();
-
+    
     r.setAttribute('width', width);
     r.setAttribute('height', height);
-
+    
     g.append(r);
-
+    
     if (text) {
-      g.append(createText({ textContent: text }));
+      const t = this.createText({ textContent: text })
+      g.append(t);
     }
-
+    
     return g;
   }
-
+  
   createText({ textContent }) {
     const textNode = document.createElementNS(SVG_NS, 'text');
     textNode.style.fontSize = '0.0175rem';
-    textNode.style.textAlign = 'center';
+    textNode.style.textAnchor = 'middle';
+    textNode.style.dominantBaseline = 'middle';
     textNode.textContent = textContent;
-    textNode.setAttribute('transform', 'translate(0.3,0.60)');
-
+    textNode.setAttribute('transform', 'translate(0.5,0.5)');
+    
     return textNode;
-  };
-
+  }
+  
+  setCanvasDimensions({ width, height } = {}) {
+    if (+width) {
+      height = +height ? height : width;
+      
+      this.#self.setAttribute('width', width);
+      this.#self.setAttribute('height', height);
+    }
+    else if (this.parentElement) {
+      const { width, height } = this.parentElement.getBoundingClientRect();
+      
+      this.#self.setAttribute('width', width);
+      this.#self.setAttribute('height', height);
+    }
+    
+    else {
+      this.#self.setAttribute('width', window.innerWidth);
+      this.#self.setAttribute('height', window.innerHeight);
+    }
+    
+    return this;
+  }
+  
+  panViewport({ x, y }) {
+    // x = Math.max(this.viewBox.x, Math.min(this.viewBox.width - x, x))
+    // y = Math.max(this.viewBox.y, Math.min(this.viewBox.height - y, y))
+    // console.log(x, y)
+    Object.assign(this.viewBox, { x, y });
+  }
+  
+  setViewBox({ x = 0, y = 0, width = 100, height = 100 }) {
+    // width = width > 10 ? 10 : width
+    // height = height > 16 ? 16 : height
+    
+    Object.assign(this.viewBox, { x, y, width, height, });
+    
+    this.surface.setAttribute('width', width)
+    
+    this.surface.setAttribute('height', height)
+    return this;
+  }
+  
+  isInView(coords) {
+    const { x, y, width, height } = this.viewBox;
+    
+    return coords.x >= x &&
+      coords.y >= y &&
+      coords.x <= width &&
+      coords.y <= height;
+    
+  }
+  
   getPixelAspectRatio() {
     const { width, height } = this.#self.getBoundingClientRect();
-
+    
     return width / height;
   }
-
+  
   getAspectRatio() {
     const { width, height } = this.#self.getBBox();
-
+    
     return width / height;
   }
-
+  
   
   querySelector(selector) { return this.#self.querySelector(selector) }
   

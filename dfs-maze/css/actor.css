@@ -1,17 +1,48 @@
 .actor {
-  transition: 0.15s ease-out;
+  /* opacity: 1; */
+  transition: 0.125s ease-out;
 }
 
 .actor>* {
-  fill: #3BAFC1;
+  /* fill: #3BAFC1; */
+  fill: #00A7FF;
   stroke: #000000;
   stroke-width: 0.05px;
   
-  
+  /* r: 0.4; */
+
 }
 
-.actor[data-moving=true]>* {
-  fill: #38DD17;
+/* .actor[data-moving=true]>* {
   stroke: #000000;
   stroke-width: 0.05px;
+} */
+
+
+
+.actor[data-moving=false],
+.actor[data-moving=false] * {
+  /* r: 0.4; */
+}
+
+
+.actor[data-moving=true],
+.actor[data-moving=true] * {
+  fill: #38DD17;
+  r: 0.3;
+}
+
+
+.actor[data-teleporting=false],
+.actor[data-teleporting=false] * {
+  /* r: 0.4; */
+
+  transition: 0.125s ease-out;
+}
+
+.actor[data-teleporting=true],
+.actor[data-teleporting=true] * {
+  fill: #783BC1;
+  r: 0.1;
+  /* transition: 0.005s; */
 }

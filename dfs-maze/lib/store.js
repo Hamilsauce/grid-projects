@@ -82,6 +82,8 @@ export class Graph {
     if (map && map.length) {
       this.fromMap(map);
     }
+    
+    window.graph = this
   }
   
   get nodes() { return [...this.#nodes.values()]; }
@@ -104,17 +106,26 @@ export class Graph {
     return this.#nodes.get(address);
   }
   
+  findNode(cb = () => {}) {
+    return this.nodes.find(cb)
+  }
+  
   getNodeAtPoint({ x, y }) {
     return this.getNodeByAddress(this.pointToAddress({ x, y }))
   }
   
   getNeighbor(node, dirName = '') {
+    if (dirName === 'remote') {
+      const tele = this.findNode((n) => n !== node && n.tileType === 'teleport')
+      return tele
+    }
     const { x, y } = DIRECTIONS.get(dirName);
     
     const n = this.getNodeAtPoint({
       x: node.x + x,
       y: node.y + y,
     });
+    
     
     if (!n || !n.isTraversable) return null;
     
@@ -126,6 +137,10 @@ export class Graph {
       .reduce((map, name, i) => {
         return node && this.getNeighbor(node, name) ? map.set(name, this.getNeighbor(node, name)) : map;
       }, new Map());
+    
+    if (node.tileType === 'teleport') {
+      neighborMap.set('remote', this.getNeighbor(node, 'remote'))
+    }
     
     return neighborMap;
   }
@@ -239,7 +254,6 @@ export class Graph {
     else {
       for (let [direction, neighbor] of unvisitedNeighbors) {
         neighbor.previous = node;
-        console.warn('direction, neighbor', direction, neighbor)
         
         if (unvisitedNeighbors.length > 0) {
           return this.shortestPathDfs(neighbor, stopNode);
@@ -263,6 +277,8 @@ export class Graph {
   }
   
   fromMap(map = []) {
+    this.#nodes.clear()
+    
     const height = map.length;
     const width = map[0].length;
     
