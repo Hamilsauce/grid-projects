@@ -270,7 +270,7 @@ canvas.addEventListener('click', async ({ detail }) => {
         
         actor1.setAttribute('transform', `translate(${curr.x},${curr.y})`);
         const isInView = canvas.isInView(curr)
-        console.warn('isInView', isInView)
+        // console.warn('isInView', isInView)
         
         // if (!isInView) {
         

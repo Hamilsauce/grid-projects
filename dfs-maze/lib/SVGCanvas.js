@@ -30,7 +30,7 @@ export class SVGCanvas extends EventTarget {
       this.panViewport(vb)
     })
     
-    this.panAction$.subscribe()
+    // this.panAction$.subscribe()
     
     this.clickDOM$ = fromEvent(this.#self, 'click')
       .pipe(
