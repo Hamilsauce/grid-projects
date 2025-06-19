@@ -172,41 +172,9 @@ let isMoving = false;
 
 const goalTile = tileLayer.querySelector('[data-tile-type="goal"]');
 
-canvas.layers.tile.addEventListener('contextmenu', e => {
-  e.preventDefault()
-  e.stopPropagation()
-  
-  const targ = e.target.closest('.tile');
-  
-  targ.dataset.selected = true
-  
-  contextMenu.setAttribute(
-    'transform',
-    `translate(${+targ.dataset.x+1.5},${+targ.dataset.y-2}) rotate(0) scale(0.05)`
-  );
-  
-  contextMenu.dataset.show = true
-  
-  const blurContextMenu = (e) => {
-    if (contextMenu.dataset.show === 'true') {
-      e.preventDefault()
-      e.stopPropagation()
-     targ.dataset.selected = false
- 
-      contextMenu.dataset.show = false;
-      contextMenu.setAttribute('transform', `translate(0,0) rotate(0) scale(0.05)`);
-      
-      // document.removeEventListener('click', blurContextMenu)
-      canvas.dom.removeEventListener('click', blurContextMenu)
-    }
-  };
-  
-  // document.addEventListener('click', blurContextMenu);
-  canvas.dom.addEventListener('click', blurContextMenu);
-});
-
 canvas.addEventListener('click', async ({ detail }) => {
   if (isMoving) return;
+  if (contextMenu.dataset.show === 'true') return;
   
   const tile = detail.target.closest('.tile');
   
@@ -361,4 +329,39 @@ canvas.addEventListener('click', async ({ detail }) => {
       }
     }, ANIM_RATE)
   }
+});
+
+
+canvas.layers.tile.addEventListener('contextmenu', e => {
+  e.preventDefault()
+  e.stopPropagation()
+  
+  const targ = e.target.closest('.tile');
+  
+  targ.dataset.selected = true
+  
+  contextMenu.setAttribute(
+    'transform',
+    `translate(${+targ.dataset.x+1.5},${+targ.dataset.y-2}) rotate(0) scale(0.05)`
+  );
+  
+  contextMenu.dataset.show = true
+  
+  const blurContextMenu = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    if (contextMenu.dataset.show === 'true') {
+      targ.dataset.selected = false
+      
+      contextMenu.dataset.show = false;
+      contextMenu.setAttribute('transform', `translate(0,0) rotate(0) scale(0.05)`);
+      
+      // document.removeEventListener('click', blurContextMenu)
+      canvas.removeEventListener('click', blurContextMenu)
+    }
+  };
+  
+  // document.addEventListener('click', blurContextMenu);
+  canvas.addEventListener('click', blurContextMenu);
 });
