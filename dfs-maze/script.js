@@ -1,4 +1,4 @@
-import { Graph } from './lib/store.js';
+import { Graph, TILE_TYPE_INDEX } from './lib/store.js';
 import { SVGCanvas } from './lib/SVGCanvas.js';
 import { MAP_9X15_1, BLANK_MAP_9X15_1, maps } from './maps.js';
 
@@ -17,12 +17,17 @@ const domPoint = (element, x, y) => {
   )
 };
 
-const useTemplate = (templateName, options) => {
+const useTemplate = (templateName, options = {}) => {
   const el = document.querySelector(`[data-template="${templateName}"]`).cloneNode(true)
   
-  delete el.dataset.template;
+  delete el.dataset.template
   
-  // el.id = `${templateName}-${utils.uuid()}`;
+  if (options.dataset) Object.assign(el.dataset, options.dataset)
+  
+  if (options.id) el.id = options.id
+  
+  if (options.fill) el.style.fill = options.fill
+  
   
   return el;
 };
@@ -62,10 +67,23 @@ const surfaceLayer = scene.querySelector('#surface-layer');
 const mapInput = document.querySelector('#map-input');
 const objectLayer = scene.querySelector('#object-layer');
 
-const actor1 = useTemplate('actor');
+const actor1 = useTemplate('actor', {
+  dataset: { moving: false, teleporting: false },
+  id: 'actor1'
+});
+
+const actor2 = useTemplate('actor', {
+  dataset: { moving: false, teleporting: false },
+  fill: '#C1723B',
+  id: 'actor2'
+});
+
+actor2.setAttribute('transform', 'translate(12,21) rotate(0) scale(1)')
+
 const contextMenu = useTemplate('context-menu');
-objectLayer.append(actor1, contextMenu);
+
 objectLayer.setAttribute('transform', 'translate(0,0) rotate(0) scale(1)')
+objectLayer.append(actor1, actor2, contextMenu);
 
 const sceneBCR = scene.getBoundingClientRect();
 const sceneBBox = scene.getBBox();
@@ -176,7 +194,22 @@ canvas.addEventListener('click', async ({ detail }) => {
   if (isMoving) return;
   if (contextMenu.dataset.show === 'true') return;
   
-  const tile = detail.target.closest('.tile');
+  let tile = detail.target.closest('.tile');
+  let activeActor
+  
+  const actorTarget = detail.target.closest('.actor');
+  // console.warn('actorTarget', actorTarget)
+  
+  if (actorTarget) {
+    const actors = [...scene.querySelectorAll('.actor')];
+    activeActor = actors.find(t => actorTarget != t);
+    // console.warn('actors', actors.map(_=>_.id))
+    tile = canvas.querySelector(`.tile[data-x="${actorTarget.dataset.x}"][data-y="${actorTarget.dataset.y}"]`);
+  }
+  else {
+    activeActor = actor1
+  }
+  // console.warn('activeActor.id', activeActor.id)
   
   const pathNodes = canvas.querySelectorAll('.tile[data-is-path-node="true"]');
   
@@ -207,7 +240,7 @@ canvas.addEventListener('click', async ({ detail }) => {
   
   const startNodeEl = canvas.querySelector('.tile[data-current="true"]') || canvas.querySelector('.tile[data-tile-type="start"]');
   
-  const targetNodeEl = canvas.querySelector('.tile[data-active="true"]');
+  const targetNodeEl = actorTarget ? tile : canvas.querySelector('.tile[data-active="true"]');
   
   const startNode = graph.getNodeAtPoint({ x: +startNodeEl.dataset.x, y: +startNodeEl.dataset.y });
   
@@ -240,7 +273,7 @@ canvas.addEventListener('click', async ({ detail }) => {
   curr = dfsPath[pointer];
   
   isMoving = true;
-  actor1.dataset.moving = isMoving;
+  activeActor.dataset.moving = isMoving;
   
   if (isMoving) {
     let dx;
@@ -252,15 +285,17 @@ canvas.addEventListener('click', async ({ detail }) => {
       if (!curr) {
         clearInterval(intervalHandle);
         isMoving = false;
-        actor1.dataset.moving = isMoving;
+        activeActor.dataset.moving = isMoving;
       }
       
       else {
         const el = canvas.querySelector(`.tile[data-x="${curr.x}"][data-y="${curr.y}"]`);
         
-        actor1.setAttribute(
+        activeActor.dataset.x = curr.x
+        activeActor.dataset.y = curr.y
+        activeActor.setAttribute(
           'transform',
-          `translate(${curr.x},${curr.y})`
+          `translate(${curr.x},${curr.y}) rotate(0) scale(1)`
         );
         
         const isInView = canvas.isInView(curr);
@@ -308,12 +343,14 @@ canvas.addEventListener('click', async ({ detail }) => {
           el.dataset.current = true;
           
           const tels = [...canvas.querySelectorAll('.tile[data-tile-type="teleport"]')]
-          
           const otherTele = tels.find(t => el != t && t.dataset.current != 'true')
           
-          actor1.setAttribute(
+          activeActor.dataset.x = el.dataset.x
+          activeActor.dataset.y = el.dataset.y
+          
+          activeActor.setAttribute(
             'transform',
-            `translate(${el.dataset.x},${el.dataset.y})`
+            `translate(${el.dataset.x},${el.dataset.y}) rotate(0) scale(1)`
           );
           
           el.dataset.active = false;
@@ -324,13 +361,37 @@ canvas.addEventListener('click', async ({ detail }) => {
           
           await sleep(10)
           
-          actor1.dataset.teleporting = false;
+          activeActor.dataset.teleporting = false;
         }
       }
     }, ANIM_RATE)
   }
 });
 
+
+contextMenu.addEventListener('click', e => {
+  e.preventDefault()
+  e.stopPropagation()
+  
+  const targ = e.target.closest('li');
+  const selectedTile = canvas.layers.tile.querySelector('.tile[data-selected="true"]');
+  
+  if (!targ || !selectedTile) return
+  
+  const node = graph.getNodeAtPoint({
+    x: +selectedTile.dataset.x,
+    y: +selectedTile.dataset.y,
+  })
+  
+  const selectedTileTypeName = targ.dataset.value;
+  
+  // node.tileType = selectedTileTypeName
+  console.warn('node', node)
+  selectedTile.dataset.tileType = selectedTileTypeName
+  selectedTile.dataset.selected = false
+  
+  contextMenu.dataset.show = false
+});
 
 canvas.layers.tile.addEventListener('contextmenu', e => {
   e.preventDefault()

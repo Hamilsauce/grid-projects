@@ -3,8 +3,8 @@
   /* transition: 0.125s ease-out; */
 }
 
-.actor>* {
-  /* fill: #3BAFC1; */
+.actor {
+  /* fill: #C1723B; */
   fill: #00A7FF;
   stroke: #000000;
   stroke-width: 0.05px;
