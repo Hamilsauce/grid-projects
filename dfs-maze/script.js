@@ -96,14 +96,6 @@ canvas.setViewBox({
 
 canvas.setCanvasDimensions()
 
-const Mixin = {
-  shit() {
-    return this.dom || 'no dom'
-  }
-}
-
-Object.assign(SVGCanvas.prototype, Mixin)
-
 // console.warn({
 //   sceneBCR,
 //   sceneBBox,
@@ -114,7 +106,6 @@ const mapInput$ = fromEvent(mapInput, 'change')
 const pointerDown$ = fromEvent(canvas, 'click')
 
 mapInput$.pipe(
-  // tap(x => console.warn('CANVAS pointerDown$')),
   tap(({ target }) => {
     const sel = target.selectedOptions[0].value;
     
@@ -139,7 +130,7 @@ mapInput$.pipe(
         canvas.createRect({
           width: 1,
           height: 1,
-          text: `${x},${y}`,
+          textContent: `${x},${y}`,
           classList: ['tile'],
           dataset: {
             tileType,
@@ -151,28 +142,20 @@ mapInput$.pipe(
           },
         }))
     });
-    
   }),
 ).subscribe()
 
-pointerDown$.pipe(
-  // tap(x => console.warn('CANVAS pointerDown$')),
-  // map(({ target, clientX, clientY }) => {
-  //   return domPoint(canvas, clientX, clientY)
-  // }),
-).subscribe()
+pointerDown$.pipe().subscribe()
 
 
 const { width, height } = scene.getBoundingClientRect()
-
-// const tiles = new Array(9 * 15).fill(null).map((_, i) => {})
 
 graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
   tileLayer.append(
     canvas.createRect({
       width: 1,
       height: 1,
-      text: `${x},${y}`,
+      textContent: `${x},${y}`,
       classList: ['tile'],
       dataset: {
         tileType,
@@ -195,21 +178,18 @@ canvas.addEventListener('click', async ({ detail }) => {
   if (contextMenu.dataset.show === 'true') return;
   
   let tile = detail.target.closest('.tile');
-  let activeActor
+  let activeActor;
   
   const actorTarget = detail.target.closest('.actor');
-  // console.warn('actorTarget', actorTarget)
   
   if (actorTarget) {
     const actors = [...scene.querySelectorAll('.actor')];
     activeActor = actors.find(t => actorTarget != t);
-    // console.warn('actors', actors.map(_=>_.id))
     tile = canvas.querySelector(`.tile[data-x="${actorTarget.dataset.x}"][data-y="${actorTarget.dataset.y}"]`);
   }
   else {
-    activeActor = actor1
+    activeActor = actor1;
   }
-  // console.warn('activeActor.id', activeActor.id)
   
   const pathNodes = canvas.querySelectorAll('.tile[data-is-path-node="true"]');
   
@@ -217,11 +197,9 @@ canvas.addEventListener('click', async ({ detail }) => {
   
   if (tile && tile.dataset.tileType !== 'barrier') {
     const activeTiles = canvas.querySelectorAll('.tile[data-active="true"]');
-    
     const highlightedTiles = canvas.querySelectorAll('.tile[data-highlight="true"]');
     
     activeTiles.forEach((el, i) => { el.dataset.active = false });
-    
     highlightedTiles.forEach((el, i) => { el.dataset.highlight = false });
     
     const pt = { x: +tile.dataset.x, y: +tile.dataset.y }
@@ -247,8 +225,7 @@ canvas.addEventListener('click', async ({ detail }) => {
   const targetNode = graph.getNodeAtPoint({ x: +targetNodeEl.dataset.x, y: +targetNodeEl.dataset.y });
   
   const dfsPath = graph.getPath(startNode, targetNode);
-  // const linkedList = graph.toLinkedList(dfsPath)
-  // console.log('linkedList', linkedList)
+
   if (dfsPath === null) {
     return
   }
@@ -299,15 +276,12 @@ canvas.addEventListener('click', async ({ detail }) => {
         );
         
         const isInView = canvas.isInView(curr);
-        // console.warn('isInView', isInView)
-        
-        // if (!isInView) {
-        
-        //   canvas.panViewport({
-        //     x: curr.x - (canvas.viewBox.width / 2),
-        //     y: curr.y - (canvas.viewBox.height / 2),
-        //   })
-        // }
+        if (!isInView) {
+          canvas.panViewport({
+            x: curr.x - (canvas.viewBox.width / 2),
+            y: curr.y - (canvas.viewBox.height / 2),
+          })
+        }
         
         if (el === startNodeEl) {
           startNodeEl.dataset.current = false;
@@ -322,7 +296,6 @@ canvas.addEventListener('click', async ({ detail }) => {
         }
         
         if (el === targetNodeEl) {
-          // console.warn('----- TARGET FOUND -----');
           el.dataset.active = true;
           el.dataset.current = true;
           
@@ -342,15 +315,15 @@ canvas.addEventListener('click', async ({ detail }) => {
           el.dataset.active = true;
           el.dataset.current = true;
           
-          const tels = [...canvas.querySelectorAll('.tile[data-tile-type="teleport"]')]
-          const otherTele = tels.find(t => el != t && t.dataset.current != 'true')
+          const tels = [...canvas.querySelectorAll('.tile[data-tile-type="teleport"]')];
+          const otherTele = tels.find(t => el != t && t.dataset.current != 'true');
           
-          activeActor.dataset.x = el.dataset.x
-          activeActor.dataset.y = el.dataset.y
+          activeActor.dataset.x = el.dataset.x;
+          activeActor.dataset.y = el.dataset.y;
           
           activeActor.setAttribute(
             'transform',
-            `translate(${el.dataset.x},${el.dataset.y}) rotate(0) scale(1)`
+            `translate(${el.dataset.x},${el.dataset.y}) rotate(0) scale(1)`,
           );
           
           el.dataset.active = false;
@@ -359,7 +332,7 @@ canvas.addEventListener('click', async ({ detail }) => {
           otherTele.dataset.active = false;
           otherTele.dataset.current = false;
           
-          await sleep(10)
+          await sleep(10);
           
           activeActor.dataset.teleporting = false;
         }
@@ -368,7 +341,6 @@ canvas.addEventListener('click', async ({ detail }) => {
   }
 });
 
-
 contextMenu.addEventListener('click', e => {
   e.preventDefault()
   e.stopPropagation()
@@ -376,7 +348,7 @@ contextMenu.addEventListener('click', e => {
   const targ = e.target.closest('li');
   const selectedTile = canvas.layers.tile.querySelector('.tile[data-selected="true"]');
   
-  if (!targ || !selectedTile) return
+  if (!targ || !selectedTile) return;
   
   const node = graph.getNodeAtPoint({
     x: +selectedTile.dataset.x,
@@ -385,17 +357,17 @@ contextMenu.addEventListener('click', e => {
   
   const selectedTileTypeName = targ.dataset.value;
   
-  // node.tileType = selectedTileTypeName
-  console.warn('node', node)
-  selectedTile.dataset.tileType = selectedTileTypeName
-  selectedTile.dataset.selected = false
+  node.setType(selectedTileTypeName);
+
+  selectedTile.dataset.tileType = selectedTileTypeName;
+  selectedTile.dataset.selected = false;
   
-  contextMenu.dataset.show = false
+  contextMenu.dataset.show = false;
 });
 
 canvas.layers.tile.addEventListener('contextmenu', e => {
-  e.preventDefault()
-  e.stopPropagation()
+  e.preventDefault();
+  e.stopPropagation();
   
   const targ = e.target.closest('.tile');
   
@@ -403,26 +375,24 @@ canvas.layers.tile.addEventListener('contextmenu', e => {
   
   contextMenu.setAttribute(
     'transform',
-    `translate(${+targ.dataset.x+1.5},${+targ.dataset.y-2}) rotate(0) scale(0.05)`
+    `translate(${+targ.dataset.x+1.5},${+targ.dataset.y-2}) rotate(0) scale(0.05)`,
   );
   
-  contextMenu.dataset.show = true
+  contextMenu.dataset.show = true;
   
   const blurContextMenu = (e) => {
-    e.preventDefault()
-    e.stopPropagation()
+    e.preventDefault();
+    e.stopPropagation();
     
     if (contextMenu.dataset.show === 'true') {
-      targ.dataset.selected = false
+      targ.dataset.selected = false;
       
       contextMenu.dataset.show = false;
       contextMenu.setAttribute('transform', `translate(0,0) rotate(0) scale(0.05)`);
       
-      // document.removeEventListener('click', blurContextMenu)
-      canvas.removeEventListener('click', blurContextMenu)
+      canvas.removeEventListener('click', blurContextMenu);
     }
   };
   
-  // document.addEventListener('click', blurContextMenu);
   canvas.addEventListener('click', blurContextMenu);
 });

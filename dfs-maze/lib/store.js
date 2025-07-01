@@ -39,6 +39,8 @@ export class GraphNode {
   
   get y() { return this.#point.y }
   
+  setType(type) { this.#tileType = type }
+  
   toJSON() {
     return {
       tileType: this.tileType,

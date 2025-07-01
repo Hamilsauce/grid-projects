@@ -20,19 +20,12 @@
 
 .tile[data-is-path-node=true] rect {
   fill: #FFF2B382;
-  /* filter: hue-rotate(45deg); */
 }
 
 .tile[data-is-path-node=true] text {
   fill: #373736;
-  /* stroke: #000000; */
   font-weight: 900;
-  /* stroke-width: 0.015px; */
-  
-  /* filter: invert(1); */
 }
-
-
 
 .tile[data-tile-type=start] rect {
   fill: #9B2B2B;
@@ -46,14 +39,11 @@
   fill: #288ED0;
   fill: #F2CA69;
   stroke: #14CC3A;
-  
 }
 
 .tile[data-current=true] rect {
   fill: #288ED0;
   stroke: #C214CC;
-  
-  /* fill: #F2CA69; */
 }
 
 .tile[data-active=true][data-is-path-node=false] text {
@@ -93,5 +83,4 @@
 
 .tile[data-selected=true] {
   filter: hue-rotate(90deg) invert(1);
-  /* stroke: #FFFFFFC2; */
 }

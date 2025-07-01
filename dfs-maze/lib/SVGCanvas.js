@@ -26,11 +26,10 @@ export class SVGCanvas extends EventTarget {
     }
     
     this.panAction$ = addPanAction(this.dom, (vb) => {
-      // console.log(vb)
       this.panViewport(vb)
     })
     
-    // this.panAction$.subscribe()
+    this.panAction$.subscribe()
     
     this.clickDOM$ = fromEvent(this.#self, 'click')
       .pipe(
@@ -75,7 +74,6 @@ export class SVGCanvas extends EventTarget {
     )
   }
   
-  
   createDOM(type, { classList, width, height, x, y, text, dataset }) {
     const g = document.createElementNS(SVG_NS, 'g');
     const el = document.createElementNS(SVG_NS, type);
@@ -98,7 +96,7 @@ export class SVGCanvas extends EventTarget {
     return g;
   }
   
-  createRect({ classList, width, height, x, y, text, dataset }) {
+  createRect({ classList, width, height, x, y, textContent, dataset }) {
     const g = document.createElementNS(SVG_NS, 'g');
     const r = document.createElementNS(SVG_NS, 'rect');
     
@@ -112,8 +110,8 @@ export class SVGCanvas extends EventTarget {
     
     g.append(r);
     
-    if (text) {
-      const t = this.createText({ textContent: text })
+    if (textContent) {
+      const t = this.createText({ textContent })
       g.append(t);
     }
     
@@ -154,21 +152,15 @@ export class SVGCanvas extends EventTarget {
   }
   
   panViewport({ x, y }) {
-    // x = Math.max(this.viewBox.x, Math.min(this.viewBox.width - x, x))
-    // y = Math.max(this.viewBox.y, Math.min(this.viewBox.height - y, y))
-    // console.log(x, y)
     Object.assign(this.viewBox, { x, y });
   }
   
   setViewBox({ x = 0, y = 0, width = 100, height = 100 }) {
-    // width = width > 10 ? 10 : width
-    // height = height > 16 ? 16 : height
-    
     Object.assign(this.viewBox, { x, y, width, height, });
     
-    this.surface.setAttribute('width', width)
+    this.surface.setAttribute('width', width);
+    this.surface.setAttribute('height', height);
     
-    this.surface.setAttribute('height', height)
     return this;
   }
   
@@ -179,7 +171,6 @@ export class SVGCanvas extends EventTarget {
       coords.y >= y &&
       coords.x <= width &&
       coords.y <= height;
-    
   }
   
   getPixelAspectRatio() {
@@ -193,7 +184,6 @@ export class SVGCanvas extends EventTarget {
     
     return width / height;
   }
-  
   
   querySelector(selector) { return this.#self.querySelector(selector) }
   
