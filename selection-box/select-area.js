@@ -14,12 +14,12 @@ const State = {
   set selection(v) {
     if (Array.isArray(v) && Array.isArray(this._selection)) {
       const deselected = this._selection.filter(t => !v.includes(t));
-
+      
       deselected.forEach((t, i) => {
         t.dataset.selected = false;
       });
     }
-
+    
     this._selection = v;
   }
 };
@@ -27,21 +27,21 @@ const State = {
 export class UnitBoundingBox extends DOMRect {
   constructor(context, x = 0, y = 0, width = 0, height = 0) {
     super(x, y, width, height);
-
+    
     this.ctx = context;
     this.normalize();
   }
-
+  
   static roundPoint(p, dir = 'floor') {
     return { x: dir === 'floor' ? Math.floor(p.x) : Math.ceil(p.x), y: dir === 'floor' ? Math.floor(p.y) : Math.ceil(p.y) };
   }
-
+  
   normalize() {
     Object.assign(this, UnitBoundingBox.roundPoint(this.domPoint(this.x, this.y)));
     this.width = this.width / this.ctx.closest('svg').viewBox.baseVal.width;
     this.height = this.height / this.ctx.closest('svg').viewBox.baseVal.height;
   }
-
+  
   domPoint(x, y) {
     return new DOMPoint(x, y).matrixTransform(
       this.ctx.getScreenCTM().inverse()
@@ -62,9 +62,9 @@ const roundPoint = (p, dir = 'floor') => {
 const translateElement = (svg, el, point) => {
   const elTransforms = el.transform.baseVal;
   const translate = svg.createSVGTransform();
-
+  
   elTransforms.clear();
-
+  
   translate.setTranslate(point.x, point.y);
   elTransforms.appendItem(translate);
 };
@@ -75,22 +75,25 @@ const drawRect = (p, s = 1, fill = 'black', className = 'tile', dataset) => {
   rect.dataset.x = p.x;
   rect.dataset.y = p.y;
   rect.dataset.selected = false;
-
-  translateElement(canvas, rect, p);
-
+  
+  translateElement(canvas, rect, {
+    x: p.x, // (p.x == 0 ? 0 : p.x + (p.x * 0.5)),
+    y: p.y,
+  });
+  
   return rect;
 };
 
-const renderTiles = (container, w = 10, h = 20) => {
+const renderTiles = (container, w = 5, h = 20) => {
   const tiles = [];
   for (let i = 0; i < h; i++) {
     for (let j = 0; j < w; j++) {
-      const tile = drawRect({ x: j, y: i }, 1, '#FFFFFF');
-
+      const tile = drawRect({ x: j, y: i + 0.0 }, 1, '#FFFFFF');
+      
       tiles.push(tile);
     }
   }
-
+  
   append(...tiles);
 };
 
@@ -106,17 +109,17 @@ const getPointOnBoard = (contextEl = scene, e) => {
 
 const getTileAtPoint = (contextEl = scene, e) => {
   const point = getPointOnBoard(contextEl, e);
-
+  
   const targetTile = getTiles()
     .find((t, i) => {
       const unitTile = {
         x: t.x.baseVal.value,
         y: t.y.baseVal.value,
       };
-
+      
       return +t.dataset.x == point.x && +t.dataset.y == point.y;
       return unitTile.x == point.x && unitTile.y == point.y;
-
+      
       return !(
         point.y > unitTile.bottom ||
         point.x < unitTile.left ||
@@ -124,7 +127,7 @@ const getTileAtPoint = (contextEl = scene, e) => {
         point.x > unitTile.right
       );
     });
-
+  
   return targetTile;
 };
 
@@ -147,48 +150,48 @@ const initScene = (svg = new SVGSVGElement, scene = new SVGPathElement()) => {
 const getRange = ({ start, end }) => {
   const tileContainer = document.querySelector('#tile-container');
   let range = [];
-
+  
   for (let y = start.y; y < end.y; y++) {
     for (let x = start.x; x < end.x; x++) {
       const tile = tileAt(x, y);
-
+      
       tile.dataset.selected = true;
-
+      
       range.push(tile);
     }
   }
-
+  
   return range;
 };
 
 const handleTileClick = (e) => {
   const isPanelClick = e.target.classList.contains('content-container') || e.target.classList.contains('panel-content');
-
+  
   if (isPanelClick) return;
-
+  
   const currFocused = [...document.querySelectorAll('rect[data-focused="true"]')];
   const activePanel = document.querySelector('.panel');
   const selectedTiles = document.querySelectorAll('.tile[data-selected="true"]');
-
+  
   selectedTiles.forEach((t, i) => {
     t.dataset.selected = false;
   });
-
+  
   const tile = getTileAtScenePoint(e);
-
+  
   if (activePanel && currentPanel && currentPanel instanceof DetailPanel) {
     activePanel.remove();
   }
-
+  
   if (tile && tile.dataset.focused === 'true') {
     tile.dataset.focused = false;
   }
-
+  
   else if (tile) {
     currFocused.forEach((t, i) => {
       t.dataset.focused = false;
     });
-
+    
     tile.dataset.focused = true;
     selectionBox.insertAt(tile);
   }
@@ -197,16 +200,16 @@ const handleTileClick = (e) => {
 const handleContextMenu = (e) => {
   const currFocused = [...document.querySelectorAll('rect[data-focused="true"]')][0];
   const activePanel = document.querySelector('.panel');
-
+  
   const tile = getTileAtScenePoint(e);
-
+  
   if (activePanel && currentPanel && currentPanel instanceof DetailPanel) {
     activePanel.remove();
   }
-
+  
   else if (tile) {
     currentPanel = new DetailPanel(currFocused);
-
+    
     currentPanel.appendTo(scene);
   }
 };
@@ -248,14 +251,14 @@ canvas.addEventListener('click', (e = new PointerEvent('pointerdown')) => {
   if (e.metaKey) {
     console.log('metaKey NEWBS');
   }
-
+  
   e.stopPropagation();
   e.preventDefault();
-
+  
   if (!State.isSelecting) {
     handleTileClick(e);
   }
-
+  
   State.isSelecting = false;
 });
 

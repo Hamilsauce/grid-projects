@@ -65,7 +65,7 @@ svg {
 
 .tile {
   fill: #FFFFFF;
-  width: 1px;
+  width: 1.5px;
   height: 1px;
   stroke: #2A2B2CD1;
   stroke-width: 0.025;

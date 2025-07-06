@@ -1,6 +1,6 @@
 .actor {
   /* opacity: 1; */
-  /* transition: 0.125s ease-out; */
+  transition: 0.125s ease-out;
 }
 
 .actor {
@@ -30,6 +30,8 @@
 .actor[data-moving=true] * {
   fill: #38DD17;
   r: 0.3;
+  transition: 0.5 ease-out;
+
 }
 
 

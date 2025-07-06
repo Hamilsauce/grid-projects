@@ -225,7 +225,7 @@ canvas.addEventListener('click', async ({ detail }) => {
   const targetNode = graph.getNodeAtPoint({ x: +targetNodeEl.dataset.x, y: +targetNodeEl.dataset.y });
   
   const dfsPath = graph.getPath(startNode, targetNode);
-
+  
   if (dfsPath === null) {
     return
   }
@@ -275,12 +275,14 @@ canvas.addEventListener('click', async ({ detail }) => {
           `translate(${curr.x},${curr.y}) rotate(0) scale(1)`
         );
         
+        
+        // canvas.panViewport({
+        //   x: curr.x - (canvas.viewBox.width / 2),
+        //   y: curr.y - (canvas.viewBox.height / 2),
+        // })
         const isInView = canvas.isInView(curr);
         if (!isInView) {
-          canvas.panViewport({
-            x: curr.x - (canvas.viewBox.width / 2),
-            y: curr.y - (canvas.viewBox.height / 2),
-          })
+          
         }
         
         if (el === startNodeEl) {
@@ -358,7 +360,7 @@ contextMenu.addEventListener('click', e => {
   const selectedTileTypeName = targ.dataset.value;
   
   node.setType(selectedTileTypeName);
-
+  
   selectedTile.dataset.tileType = selectedTileTypeName;
   selectedTile.dataset.selected = false;
   
