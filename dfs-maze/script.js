@@ -268,6 +268,9 @@ canvas.addEventListener('click', async ({ detail }) => {
       else {
         const el = canvas.querySelector(`.tile[data-x="${curr.x}"][data-y="${curr.y}"]`);
         
+        const lastX = +activeActor.dataset.x
+        const lastY = +activeActor.dataset.y
+        
         activeActor.dataset.x = curr.x
         activeActor.dataset.y = curr.y
         activeActor.setAttribute(
@@ -275,15 +278,10 @@ canvas.addEventListener('click', async ({ detail }) => {
           `translate(${curr.x},${curr.y}) rotate(0) scale(1)`
         );
         
-        
-        // canvas.panViewport({
-        //   x: curr.x - (canvas.viewBox.width / 2),
-        //   y: curr.y - (canvas.viewBox.height / 2),
-        // })
-        const isInView = canvas.isInView(curr);
-        if (!isInView) {
-          
-        }
+        canvas.panViewport({
+          x: (curr.x - (canvas.viewBox.width / 2)) * 0.025,
+          y: (curr.y - (canvas.viewBox.height / 2)) * 0.025,
+        })
         
         if (el === startNodeEl) {
           startNodeEl.dataset.current = false;
