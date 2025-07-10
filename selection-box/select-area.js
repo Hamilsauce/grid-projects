@@ -1,6 +1,6 @@
 import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
 const { DOM, date, array, utils, text } = ham;
-import { TileSelector, getTileSelector } from './SelectionBox.js';
+import { getTileSelector } from './SelectionBox.js';
 import { DetailPanel } from './view/detail-panel.view.js';
 
 let currentPanel;
@@ -72,6 +72,10 @@ const translateElement = (svg, el, point) => {
 const drawRect = (p, s = 1, fill = 'black', className = 'tile', dataset) => {
   const rect = document.createElementNS(SVG_NS, 'rect');
   rect.classList.add(className);
+  rect.width.baseVal.value = s;
+  rect.height.baseVal.value = s;
+
+  rect.setAttribute('fill', fill)
   rect.dataset.x = p.x;
   rect.dataset.y = p.y;
   rect.dataset.selected = false;
@@ -151,8 +155,8 @@ const getRange = ({ start, end }) => {
   const tileContainer = document.querySelector('#tile-container');
   let range = [];
   
-  for (let y = start.y; y < end.y; y++) {
-    for (let x = start.x; x < end.x; x++) {
+  for (let x = start.x; x < end.x; x++) {
+    for (let y = start.y; y < end.y; y++) {
       const tile = tileAt(x, y);
       
       tile.dataset.selected = true;
@@ -224,6 +228,7 @@ const viewBox = canvas.viewBox;
 const selectionBox = getTileSelector(scene);
 
 selectionBox.on('selection', range => {
+  console.warn('SELECTION: ', range)
   State.selection = getRange(range);
   State.isSelecting = true;
 });

@@ -26,6 +26,7 @@ export class SVGCanvas extends EventTarget {
     }
     
     this.panAction$ = addPanAction(this.dom, (vb) => {
+      // console.warn('vb', vb)
       this.panViewport(vb)
     })
     
@@ -61,6 +62,8 @@ export class SVGCanvas extends EventTarget {
   }
   
   get dom() { return this.#self }
+  
+  get scene() { return this.#self.querySelector('#scene') }
   
   get parentElement() { return this.#self.parentElement }
   
@@ -152,6 +155,7 @@ export class SVGCanvas extends EventTarget {
   }
   
   panViewport({ x, y }) {
+    // console.warn('this.viewBox', this.viewBox)
     Object.assign(this.viewBox, { x, y });
   }
   

@@ -1,7 +1,7 @@
 import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
 const { template, utils, download } = ham;
 
-export const TILE_TYPE_INDEX = [
+export const TILE_TYPE_NAME_INDEX = [
   'empty',
   'barrier',
   'start',
@@ -71,6 +71,27 @@ export class Neighbor {
   visit() {
     this.#visited = true;
   }
+}
+
+export class TeleportNode extends GraphNode {
+  #linkedNodeAddress = null;
+  
+  constructor(nodeState, linkedNodeAddress = null) {
+    super(nodeState);
+    this.#linkedNodeAddress = linkedNodeAddress;
+    // this.#visited = visited;
+  }
+  
+  linkToAddress(addressKey) {
+    this.#linkedNodeAddress = addressKey;
+  }
+  
+  unlink() {
+    const address = this.#linkedNodeAddress;
+    this.#linkedNodeAddress = null;
+    return address
+  }
+  
 }
 
 
@@ -286,8 +307,18 @@ export class Graph {
     
     map.forEach((row, rowNumber) => {
       row.forEach((typeId, columnNumber) => {
+        const tileType = TILE_TYPE_NAME_INDEX[typeId];
+          
+          if (tileType === 'teleport') {
+            const node = new TeleportNode({
+              tileType: TILE_TYPE_NAME_INDEX[typeId],
+              x: columnNumber,
+              y: rowNumber
+            });
+            
+          }
         const node = new GraphNode({
-          tileType: TILE_TYPE_INDEX[typeId],
+          tileType: TILE_TYPE_NAME_INDEX[typeId],
           x: columnNumber,
           y: rowNumber
         });
@@ -298,5 +329,33 @@ export class Graph {
     
     this.height = map.length
     this.width = map[0].length
+  }
+  
+  toMap(formatAsCharMatrix = true) {
+    const output = new Array(this.height).fill(null).map(_ => new Array(this.width).fill(null));
+    // const charMapOutput = new Array(this.height).fill(null).map(_ => new Array(this.width).fill(null));
+    
+    const tileTypes = TILE_TYPE_NAME_INDEX.reduce((acc, curr, i) => {
+      return { ...acc, [curr]: i }
+    }, {});
+    
+    [...this.#nodes].forEach(([addressKey, node], i) => {
+      const [x, y] = addressKey.split(',').map(_ => +_);
+      output[y][x] = formatAsCharMatrix ? tileTypes[node.tileType] : node
+      // charMapOutput[y][x] = tileTypes[node.tileType]
+    });
+    
+    const outputJSON = JSON.stringify(output)
+    // const output = [...this.#nodes.entries()].reduce((acc, [address, node], i) => {
+    //     const [x, y] = address.split(',').map(_ => +_);
+    //     console.warn('x, y', typeof x, typeof y)
+    //     // console.warn(acc)
+    //     // if (!(acc[y])) {
+    //     //   acc[y] = new Array(this.width).fill(null)
+    //     // }
+    //     acc[y][x] = node
+    //   }, new Array(this.height).fill(null).map(_ => new Array(this.width).fill(null)));
+    
+    return outputJSON;
   }
 }

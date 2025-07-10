@@ -1,4 +1,4 @@
-import { Graph, TILE_TYPE_INDEX } from './lib/store.js';
+import { Graph, TILE_TYPE_NAME_INDEX } from './lib/store.js';
 import { SVGCanvas } from './lib/SVGCanvas.js';
 import { MAP_9X15_1, BLANK_MAP_9X15_1, maps } from './maps.js';
 
@@ -16,6 +16,11 @@ const domPoint = (element, x, y) => {
     element.getScreenCTM().inverse()
   )
 };
+
+const copyTextToClipboard = async (text) => {
+  await navigator.clipboard.writeText(text);
+};
+
 
 const useTemplate = (templateName, options = {}) => {
   const el = document.querySelector(`[data-template="${templateName}"]`).cloneNode(true)
@@ -145,7 +150,9 @@ mapInput$.pipe(
   }),
 ).subscribe()
 
-pointerDown$.pipe().subscribe()
+pointerDown$.pipe(
+  // tap(x => console.log('x', x)),
+).subscribe()
 
 
 const { width, height } = scene.getBoundingClientRect()
@@ -341,9 +348,24 @@ canvas.addEventListener('click', async ({ detail }) => {
   }
 });
 
+
+const saveButton = document.querySelector('#save-map')
+saveButton.addEventListener('click', e => {
+  e.preventDefault()
+  e.stopPropagation()
+  e.stopImmediatePropagation()
+  
+  
+  const graphOut = graph.toMap();
+  copyTextToClipboard(graphOut)
+  console.warn('graphOut\n\n', graphOut)
+});
+
+
 contextMenu.addEventListener('click', e => {
   e.preventDefault()
   e.stopPropagation()
+  e.stopImmediatePropagation()
   
   const targ = e.target.closest('li');
   const selectedTile = canvas.layers.tile.querySelector('.tile[data-selected="true"]');
@@ -368,6 +390,7 @@ contextMenu.addEventListener('click', e => {
 canvas.layers.tile.addEventListener('contextmenu', e => {
   e.preventDefault();
   e.stopPropagation();
+  e.stopImmediatePropagation()
   
   const targ = e.target.closest('.tile');
   
@@ -383,6 +406,7 @@ canvas.layers.tile.addEventListener('contextmenu', e => {
   const blurContextMenu = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    e.stopImmediatePropagation()
     
     if (contextMenu.dataset.show === 'true') {
       targ.dataset.selected = false;
@@ -393,6 +417,5 @@ canvas.layers.tile.addEventListener('contextmenu', e => {
       canvas.removeEventListener('click', blurContextMenu);
     }
   };
-  
   canvas.addEventListener('click', blurContextMenu);
 });
