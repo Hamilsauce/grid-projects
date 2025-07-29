@@ -74,15 +74,23 @@ const surfaceLayer = scene.querySelector('#surface-layer');
 const mapInput = document.querySelector('#map-input');
 const objectLayer = scene.querySelector('#object-layer');
 
-const tileSelector = getTileSelector(scene)
+const selectionBox = getTileSelector(objectLayer)
 
 let selectedRange = []
 
 const tileAt = (x, y) => tileLayer.querySelector(`.tile[data-y="${y}"][data-x="${x}"]`);
 
+const deselectRange = () => {
+  selectedRange.forEach((t, i) => {
+    t.dataset.selected = false;
+  });
+}
+
 const getRange = ({ start, end }) => {
   // const tileContainer = document.querySelector('#tile-container');
   let range = [];
+  
+  deselectRange()
   
   for (let x = start.x; x < end.x; x++) {
     for (let y = start.y; y < end.y; y++) {
@@ -99,9 +107,13 @@ const getRange = ({ start, end }) => {
 
 
 selectionBox.on('selection', range => {
-  console.warn('SELECTION: ', range)
+  // console.warn('SELECTION: ', range)
   selectedRange = getRange(range);
-  // State.isSelecting = true;
+  const { startPoint, endPoint } = selectionBox
+  contextMenu.setAttribute(
+    'transform',
+    `translate(${endPoint.x+1.5},${startPoint.y-2}) rotate(0) scale(0.05)`,
+  );
   
   // graph.getRange(range, (tile) => tile.selected = true)
 });
@@ -251,10 +263,10 @@ svgCanvas.addEventListener('click', async ({ detail }) => {
   if (contextMenu.dataset.show === 'true') return;
   
   
-  selectedRange.forEach((t, i) => {
-    t.dataset.selected = false;
-  });
-  
+  // selectedRange.forEach((t, i) => {
+  //   t.dataset.selected = false;
+  // });
+  deselectRange()
   selectedRange = []
   selectionBox.remove()
   let tile = detail.target.closest('.tile');
@@ -441,6 +453,7 @@ contextMenu.addEventListener('click', e => {
   
   const targ = e.target.closest('li');
   const selectedTile = svgCanvas.layers.tile.querySelector('.tile[data-selected="true"]');
+  const selectedTiles = selectedRange
   
   if (!targ || !selectedTile) return;
   
@@ -456,6 +469,22 @@ contextMenu.addEventListener('click', e => {
   selectedTile.dataset.tileType = selectedTileTypeName;
   selectedTile.dataset.selected = false;
   
+  
+  selectedRange.forEach((tile, i) => {
+    const nodeModel = graph.getNodeAtPoint({
+      x: +tile.dataset.x,
+      y: +tile.dataset.y,
+    })
+    
+    node.setType(selectedTileTypeName);
+    
+    tile.dataset.tileType = selectedTileTypeName;
+  });
+  
+  deselectRange()
+  
+  
+  
   contextMenu.dataset.show = false;
 });
 
@@ -468,6 +497,7 @@ svgCanvas.layers.tile.addEventListener('contextmenu', e => {
   
   targ.dataset.selected = true
   selectionBox.insertAt(targ);
+  contextMenu.parentElement.append(contextMenu)
   
   contextMenu.setAttribute(
     'transform',
@@ -484,8 +514,8 @@ svgCanvas.layers.tile.addEventListener('contextmenu', e => {
     
     console.log(pageScrolling.isEnabled)
     if (contextMenu.dataset.show === 'true') {
-      targ.dataset.selected = false;
-      
+      // targ.dataset.selected = false;
+      deselectRange()
       contextMenu.dataset.show = false;
       contextMenu.setAttribute('transform', `translate(0,0) rotate(0) scale(0.05)`);
       
