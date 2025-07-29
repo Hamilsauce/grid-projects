@@ -1,7 +1,6 @@
 import { Graph, TILE_TYPE_NAME_INDEX } from './lib/store.js';
 import { SVGCanvas } from './lib/SVGCanvas.js';
 import { MAP_9X15_1, BLANK_MAP_9X15_1, maps } from './maps.js';
-import { getTileSelector } from '../selection-box/SelectionBox.js';
 
 import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
 
@@ -38,24 +37,24 @@ const useTemplate = (templateName, options = {}) => {
   return el;
 };
 
-const setCanvasDimensions = (svgCanvas) => {
-  if (svgCanvas.parentElement) {
-    const { width, height } = svgCanvas.parentElement.getBoundingClientRect();
+const setCanvasDimensions = (canvas) => {
+  if (canvas.parentElement) {
+    const { width, height } = canvas.parentElement.getBoundingClientRect();
     
-    svgCanvas.setAttribute('width', width);
-    svgCanvas.setAttribute('height', height);
+    canvas.setAttribute('width', width);
+    canvas.setAttribute('height', height);
   }
   
   else {
-    svgCanvas.setAttribute('width', window.innerWidth);
-    svgCanvas.setAttribute('height', window.innerHeight);
+    canvas.setAttribute('width', window.innerWidth);
+    canvas.setAttribute('height', window.innerHeight);
   }
   
-  return svgCanvas
+  return canvas
 };
 
-const getAspectRatio = (svgCanvas) => {
-  const { width, height } = svgCanvas.getBoundingClientRect();
+const getAspectRatio = (canvas) => {
+  const { width, height } = canvas.getBoundingClientRect();
   
   return width / height;
 };
@@ -66,7 +65,7 @@ const app = document.querySelector('#app');
 const appBody = document.querySelector('#app-body')
 
 const canvasEl = document.querySelector('#canvas');
-// const svgCanvas = new SVGCanvas(canvasEl)
+const canvas = new SVGCanvas(canvasEl)
 const svgCanvas = new SVGCanvas(canvasEl)
 const scene = document.querySelector('#scene');
 const tileLayer = scene.querySelector('#tile-layer');
@@ -74,37 +73,6 @@ const surfaceLayer = scene.querySelector('#surface-layer');
 const mapInput = document.querySelector('#map-input');
 const objectLayer = scene.querySelector('#object-layer');
 
-const tileSelector = getTileSelector(scene)
-
-let selectedRange = []
-
-const tileAt = (x, y) => tileLayer.querySelector(`.tile[data-y="${y}"][data-x="${x}"]`);
-
-const getRange = ({ start, end }) => {
-  // const tileContainer = document.querySelector('#tile-container');
-  let range = [];
-  
-  for (let x = start.x; x < end.x; x++) {
-    for (let y = start.y; y < end.y; y++) {
-      const tile = tileAt(x, y);
-      
-      tile.dataset.selected = true;
-      
-      range.push(tile);
-    }
-  }
-  
-  return range;
-};
-
-
-selectionBox.on('selection', range => {
-  console.warn('SELECTION: ', range)
-  selectedRange = getRange(range);
-  // State.isSelecting = true;
-  
-  // graph.getRange(range, (tile) => tile.selected = true)
-});
 
 const pageScrolling = {
   get isEnabled() {
@@ -157,14 +125,14 @@ objectLayer.append(actor1, actor2, contextMenu);
 
 const sceneBCR = scene.getBoundingClientRect();
 const sceneBBox = scene.getBBox();
-const canvasViewBox = svgCanvas.viewBox;
+const canvasViewBox = canvas.viewBox;
 
-svgCanvas.setViewBox({
+canvas.setViewBox({
   width: graph.width,
   height: graph.height
 })
 
-svgCanvas.setCanvasDimensions()
+canvas.setCanvasDimensions()
 
 // console.warn({
 //   sceneBCR,
@@ -173,8 +141,8 @@ svgCanvas.setCanvasDimensions()
 // });
 
 const mapInput$ = fromEvent(mapInput, 'change')
-const pointerDown$ = fromEvent(svgCanvas, 'click')
-const pointerup$ = fromEvent(svgCanvas, 'pointerup')
+const pointerDown$ = fromEvent(canvas, 'click')
+const pointerup$ = fromEvent(canvas, 'pointerup')
 
 mapInput$.pipe(
   tap(({ target }) => {
@@ -183,22 +151,22 @@ mapInput$.pipe(
     const selectedMap = maps[sel];
     graph.fromMap(selectedMap);
     
-    svgCanvas.setViewBox({
+    canvas.setViewBox({
       x: 0,
       y: 0,
       width: graph.width,
       height: graph.height
     });
     
-    svgCanvas.layers.tile.innerHTML = '';
+    canvas.layers.tile.innerHTML = '';
     
     graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
       if (tileType === 'start') {
         actor1.setAttribute('transform', `translate(${x},${y})`);
       }
       
-      svgCanvas.layers.tile.append(
-        svgCanvas.createRect({
+      canvas.layers.tile.append(
+        canvas.createRect({
           width: 1,
           height: 1,
           textContent: `${x},${y}`,
@@ -225,7 +193,7 @@ const { width, height } = scene.getBoundingClientRect()
 
 graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
   tileLayer.append(
-    svgCanvas.createRect({
+    canvas.createRect({
       width: 1,
       height: 1,
       textContent: `${x},${y}`,
@@ -246,17 +214,10 @@ let isMoving = false;
 
 const goalTile = tileLayer.querySelector('[data-tile-type="goal"]');
 
-svgCanvas.addEventListener('click', async ({ detail }) => {
+canvas.addEventListener('click', async ({ detail }) => {
   if (isMoving) return;
   if (contextMenu.dataset.show === 'true') return;
   
-  
-  selectedRange.forEach((t, i) => {
-    t.dataset.selected = false;
-  });
-  
-  selectedRange = []
-  selectionBox.remove()
   let tile = detail.target.closest('.tile');
   let activeActor;
   
@@ -265,19 +226,19 @@ svgCanvas.addEventListener('click', async ({ detail }) => {
   if (actorTarget) {
     const actors = [...scene.querySelectorAll('.actor')];
     activeActor = actors.find(t => actorTarget != t);
-    tile = svgCanvas.querySelector(`.tile[data-x="${actorTarget.dataset.x}"][data-y="${actorTarget.dataset.y}"]`);
+    tile = canvas.querySelector(`.tile[data-x="${actorTarget.dataset.x}"][data-y="${actorTarget.dataset.y}"]`);
   }
   else {
     activeActor = actor1;
   }
   
-  const pathNodes = svgCanvas.querySelectorAll('.tile[data-is-path-node="true"]');
+  const pathNodes = canvas.querySelectorAll('.tile[data-is-path-node="true"]');
   
   pathNodes.forEach((el, i) => { el.dataset.isPathNode = false });
   
   if (tile && tile.dataset.tileType !== 'barrier') {
-    const activeTiles = svgCanvas.querySelectorAll('.tile[data-active="true"]');
-    const highlightedTiles = svgCanvas.querySelectorAll('.tile[data-highlight="true"]');
+    const activeTiles = canvas.querySelectorAll('.tile[data-active="true"]');
+    const highlightedTiles = canvas.querySelectorAll('.tile[data-highlight="true"]');
     
     activeTiles.forEach((el, i) => { el.dataset.active = false });
     highlightedTiles.forEach((el, i) => { el.dataset.highlight = false });
@@ -291,14 +252,14 @@ svgCanvas.addEventListener('click', async ({ detail }) => {
     tile.dataset.active = true;
     
     [...neighbors.values()].forEach((node, i) => {
-      const el = svgCanvas.querySelector(`.tile[data-x="${node.x}"][data-y="${node.y}"]`)
+      const el = canvas.querySelector(`.tile[data-x="${node.x}"][data-y="${node.y}"]`)
       el.dataset.highlight = true;
     });
   }
   
-  const startNodeEl = svgCanvas.querySelector('.tile[data-current="true"]') || svgCanvas.querySelector('.tile[data-tile-type="start"]');
+  const startNodeEl = canvas.querySelector('.tile[data-current="true"]') || canvas.querySelector('.tile[data-tile-type="start"]');
   
-  const targetNodeEl = actorTarget ? tile : svgCanvas.querySelector('.tile[data-active="true"]');
+  const targetNodeEl = actorTarget ? tile : canvas.querySelector('.tile[data-active="true"]');
   
   const startNode = graph.getNodeAtPoint({ x: +startNodeEl.dataset.x, y: +startNodeEl.dataset.y });
   
@@ -346,7 +307,7 @@ svgCanvas.addEventListener('click', async ({ detail }) => {
       }
       
       else {
-        const el = svgCanvas.querySelector(`.tile[data-x="${curr.x}"][data-y="${curr.y}"]`);
+        const el = canvas.querySelector(`.tile[data-x="${curr.x}"][data-y="${curr.y}"]`);
         
         const lastX = +activeActor.dataset.x
         const lastY = +activeActor.dataset.y
@@ -358,9 +319,9 @@ svgCanvas.addEventListener('click', async ({ detail }) => {
           `translate(${curr.x},${curr.y}) rotate(0) scale(1)`
         );
         
-        svgCanvas.panViewport({
-          x: (curr.x - (svgCanvas.viewBox.width / 2)) * 0.025,
-          y: (curr.y - (svgCanvas.viewBox.height / 2)) * 0.025,
+        canvas.panViewport({
+          x: (curr.x - (canvas.viewBox.width / 2)) * 0.025,
+          y: (curr.y - (canvas.viewBox.height / 2)) * 0.025,
         })
         
         if (el === startNodeEl) {
@@ -395,7 +356,7 @@ svgCanvas.addEventListener('click', async ({ detail }) => {
           el.dataset.active = true;
           el.dataset.current = true;
           
-          const tels = [...svgCanvas.querySelectorAll('.tile[data-tile-type="teleport"]')];
+          const tels = [...canvas.querySelectorAll('.tile[data-tile-type="teleport"]')];
           const otherTele = tels.find(t => el != t && t.dataset.current != 'true');
           
           activeActor.dataset.x = el.dataset.x;
@@ -440,7 +401,7 @@ contextMenu.addEventListener('click', e => {
   e.stopImmediatePropagation()
   
   const targ = e.target.closest('li');
-  const selectedTile = svgCanvas.layers.tile.querySelector('.tile[data-selected="true"]');
+  const selectedTile = canvas.layers.tile.querySelector('.tile[data-selected="true"]');
   
   if (!targ || !selectedTile) return;
   
@@ -459,7 +420,7 @@ contextMenu.addEventListener('click', e => {
   contextMenu.dataset.show = false;
 });
 
-svgCanvas.layers.tile.addEventListener('contextmenu', e => {
+canvas.layers.tile.addEventListener('contextmenu', e => {
   e.preventDefault();
   e.stopPropagation();
   e.stopImmediatePropagation()
@@ -467,7 +428,6 @@ svgCanvas.layers.tile.addEventListener('contextmenu', e => {
   const targ = e.target.closest('.tile');
   
   targ.dataset.selected = true
-  selectionBox.insertAt(targ);
   
   contextMenu.setAttribute(
     'transform',
@@ -489,19 +449,10 @@ svgCanvas.layers.tile.addEventListener('contextmenu', e => {
       contextMenu.dataset.show = false;
       contextMenu.setAttribute('transform', `translate(0,0) rotate(0) scale(0.05)`);
       
-      svgCanvas.removeEventListener('click', blurContextMenu);
+      canvas.removeEventListener('click', blurContextMenu);
+      svgCanvas.dispatchEvent('blurContextMenu');
       
     }
-    
-    svgCanvas.dom.addEventListener('click', e => {
-      svgCanvas.dispatchEvent(new Event('blurContextMenu'));
-    })
-    
-    contextMenu.addEventListener('click', e => {
-      svgCanvas.dispatchEvent(new Event('blurContextMenu'));
-    })
-    svgCanvas.dispatchEvent(new Event('blurContextMenu'));
   };
-  svgCanvas.addEventListener('click', blurContextMenu);
-  
+  canvas.addEventListener('click', blurContextMenu);
 });

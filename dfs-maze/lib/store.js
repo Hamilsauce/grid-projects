@@ -137,6 +137,28 @@ export class Graph {
     return this.getNodeByAddress(this.pointToAddress({ x, y }))
   }
   
+  getRange({ start, end }, updateFn) {
+    let range = [];
+    
+    for (let x = start.x; x < end.x; x++) {
+      for (let y = start.y; y < end.y; y++) {
+        const tile = this.getNodeAtPoint({x, y});
+        
+        tile.dataset.selected = true;
+        // if (updateFn) {
+        //   updateFn(tile)
+        // }
+        
+        this.activeRange.push(tile);
+      }
+    }
+    
+    return range;
+  };
+  
+  
+  
+  
   getNeighbor(node, dirName = '') {
     if (dirName === 'remote') {
       const tele = this.findNode((n) => n !== node && n.tileType === 'teleport')
@@ -240,10 +262,6 @@ export class Graph {
     return null; // no path found
   }
   
-  
-  
-  
-  
   shortestPathDfs(node, stopNode) {
     //node = this.startNode, stopNode = this.goalNode) {
     // node.isPathNode = true;
@@ -308,19 +326,21 @@ export class Graph {
     map.forEach((row, rowNumber) => {
       row.forEach((typeId, columnNumber) => {
         const tileType = TILE_TYPE_NAME_INDEX[typeId];
-          
-          if (tileType === 'teleport') {
-            const node = new TeleportNode({
-              tileType: TILE_TYPE_NAME_INDEX[typeId],
-              x: columnNumber,
-              y: rowNumber
-            });
-            
-          }
+        
+        if (tileType === 'teleport') {
+          const node = new TeleportNode({
+            tileType: TILE_TYPE_NAME_INDEX[typeId],
+            x: columnNumber,
+            y: rowNumber,
+            selected: false,
+          });
+        }
+        
         const node = new GraphNode({
           tileType: TILE_TYPE_NAME_INDEX[typeId],
           x: columnNumber,
-          y: rowNumber
+          y: rowNumber,
+          selected: false,
         });
         
         this.#nodes.set(node.address, node);

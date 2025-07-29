@@ -81,6 +81,9 @@
   fill: #12B582;
 }
 
-.tile[data-selected=true] {
-  filter: hue-rotate(90deg) invert(1);
+.tile[data-selected=true] > rect{
+  /* stroke: #16EC1A; */
+  /* stroke-width: 0.5px; */
+  fill: #16EC1A;
+  /* filter: hue-rotate(90deg) invert(1); */
 }

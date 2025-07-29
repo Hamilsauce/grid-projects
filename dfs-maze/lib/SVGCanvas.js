@@ -9,6 +9,7 @@ const { flatMap, reduce, groupBy, toArray, mergeMap, switchMap, scan, map, tap, 
 
 export class SVGCanvas extends EventTarget {
   #self = null;
+  #isContextMenuActive = false;
   
   constructor(svg) {
     super();
@@ -25,8 +26,26 @@ export class SVGCanvas extends EventTarget {
       object: this.dom.querySelector('#object-layer'),
     }
     
+    
+    
+    this.layers.tile.addEventListener('contextmenu', (e) => {
+      this.#isContextMenuActive = true;
+      console.warn('this.isContextMenuActive ', this.isContextMenuActive)
+      
+      this.dom.addEventListener('click', this.toggleScroll)
+      document.querySelector('#context-menu').addEventListener('click', this.toggleScroll)
+      
+    })
+    
+    this.dom.addEventListener('blurContextMenu', (e) => {
+      this.#isContextMenuActive = false;
+      console.warn('PPOP.#blurContextMenu', this.#isContextMenuActive)
+    })
+    
     this.panAction$ = addPanAction(this.dom, (vb) => {
-      // console.warn('vb', vb)
+      if (this.isContextMenuActive) {
+        return
+      }
       this.panViewport(vb)
     })
     
@@ -58,10 +77,13 @@ export class SVGCanvas extends EventTarget {
         tap((event) => this.dispatchEvent(event)),
       );
     
+    this.toggleScroll = this.#toggleScroll.bind(this)
     this.clickDOMSubscription = this.eventEmits$.subscribe();
   }
   
   get dom() { return this.#self }
+  
+  get isContextMenuActive() { return this.#isContextMenuActive }
   
   get scene() { return this.#self.querySelector('#scene') }
   
@@ -75,6 +97,20 @@ export class SVGCanvas extends EventTarget {
     return new DOMPoint(x, y).matrixTransform(
       this.dom.getScreenCTM().inverse()
     )
+  }
+  
+  
+  #toggleScroll(x, y) {
+    this.#isContextMenuActive = !this.#isContextMenuActive
+    
+    if (this.isContextMenuActive) {
+      this.dom.removeEventListener('contextmenu', this.toggleScroll)
+      this.dom.addEventListener('click', this.toggleScroll)
+    } else {
+      this.dom.addEventListener('contextmenu', this.toggleScroll)
+      this.dom.removeEventListener('click', this.toggleScroll)
+      
+    }
   }
   
   createDOM(type, { classList, width, height, x, y, text, dataset }) {
