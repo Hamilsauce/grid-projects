@@ -1,25 +1,29 @@
-import { Graph, TILE_TYPE_NAME_INDEX } from './lib/store.js';
+import { Graph, TILE_TYPE_INDEX } from './lib/store.js';
 import { SVGCanvas } from './lib/SVGCanvas.js';
-import { MAP_9X15_1, BLANK_MAP_9X15_1, maps } from './maps.js';
+import { MAP_9X15_1, BLANK_MAP_9X15_1, maps, mapStorageFormatter } from './maps.js';
+import { copyTextToClipboard } from '../dfs-maze/lib/utils.js';
 import { getTileSelector } from '../selection-box/SelectionBox.js';
-
 import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
+// import { db, doc, collection, setDoc } from '../../fbase.js'
+import { initMapControls } from '../dfs-maze/ui/map-selection.js';
+
+
+// import { storeMaps } from '../dfs-maze/map.service.js';
+
+// const ids = await storeMaps();
+
 
 const { sleep, template, utils, download, TwoWayMap } = ham;
 
 const { forkJoin, Observable, iif, BehaviorSubject, AsyncSubject, Subject, interval, of, fromEvent, merge, empty, delay, from } = rxjs;
 const { flatMap, reduce, groupBy, toArray, mergeMap, switchMap, scan, map, tap, filter } = rxjs.operators;
 
-const graph = new Graph(maps.BIG_ASS_MAP);
+const graph = new Graph(maps.BIG_ASS_MAP.tiles);
 
 const domPoint = (element, x, y) => {
   return new DOMPoint(x, y).matrixTransform(
     element.getScreenCTM().inverse()
   )
-};
-
-const copyTextToClipboard = async (text) => {
-  await navigator.clipboard.writeText(text);
 };
 
 
@@ -33,7 +37,6 @@ const useTemplate = (templateName, options = {}) => {
   if (options.id) el.id = options.id
   
   if (options.fill) el.style.fill = options.fill
-  
   
   return el;
 };
@@ -71,17 +74,18 @@ const svgCanvas = new SVGCanvas(canvasEl)
 const scene = document.querySelector('#scene');
 const tileLayer = scene.querySelector('#tile-layer');
 const surfaceLayer = scene.querySelector('#surface-layer');
-const mapInput = document.querySelector('#map-input');
+// const mapInput = document.querySelector('#map-input');
 const objectLayer = scene.querySelector('#object-layer');
 
 const selectionBox = getTileSelector(objectLayer)
 
 let selectedRange = []
+let getSelectedRange = () => [...tileLayer.querySelectorAll('.tile[data-selected="true"]')];
 
 const tileAt = (x, y) => tileLayer.querySelector(`.tile[data-y="${y}"][data-x="${x}"]`);
 
 const deselectRange = () => {
-  selectedRange.forEach((t, i) => {
+  getSelectedRange().forEach((t, i) => {
     t.dataset.selected = false;
   });
 }
@@ -107,15 +111,15 @@ const getRange = ({ start, end }) => {
 
 
 selectionBox.on('selection', range => {
-  // console.warn('SELECTION: ', range)
+  console.warn('SELECTION: ', selectionBox.boundingBox)
   selectedRange = getRange(range);
   const { startPoint, endPoint } = selectionBox
   contextMenu.setAttribute(
     'transform',
-    `translate(${endPoint.x+1.5},${startPoint.y-2}) rotate(0) scale(0.05)`,
+    `translate(${endPoint.x+1.5},${endPoint.y-5}) rotate(0) scale(0.05)`,
   );
   
-  // graph.getRange(range, (tile) => tile.selected = true)
+  graph.getRange(range, (tile) => tile.selected = true)
 });
 
 const pageScrolling = {
@@ -160,6 +164,8 @@ const actor2 = useTemplate('actor', {
   id: 'actor2'
 });
 
+initMapControls(graph, svgCanvas, actor1)
+
 actor2.setAttribute('transform', 'translate(12,21) rotate(0) scale(1)')
 
 const contextMenu = useTemplate('context-menu');
@@ -184,49 +190,49 @@ svgCanvas.setCanvasDimensions()
 //   canvasViewBox
 // });
 
-const mapInput$ = fromEvent(mapInput, 'change')
+// const mapInput$ = fromEvent(mapInput, 'change')
 const pointerDown$ = fromEvent(svgCanvas, 'click')
 const pointerup$ = fromEvent(svgCanvas, 'pointerup')
 
-mapInput$.pipe(
-  tap(({ target }) => {
-    const sel = target.selectedOptions[0].value;
-    
-    const selectedMap = maps[sel];
-    graph.fromMap(selectedMap);
-    
-    svgCanvas.setViewBox({
-      x: 0,
-      y: 0,
-      width: graph.width,
-      height: graph.height
-    });
-    
-    svgCanvas.layers.tile.innerHTML = '';
-    
-    graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
-      if (tileType === 'start') {
-        actor1.setAttribute('transform', `translate(${x},${y})`);
-      }
-      
-      svgCanvas.layers.tile.append(
-        svgCanvas.createRect({
-          width: 1,
-          height: 1,
-          textContent: `${x},${y}`,
-          classList: ['tile'],
-          dataset: {
-            tileType,
-            x: x,
-            y: y,
-            current: false,
-            active: false,
-            isPathNode: false,
-          },
-        }))
-    });
-  }),
-).subscribe()
+// mapInput$.pipe(
+//   tap(({ target }) => {
+//     const sel = target.selectedOptions[0].value;
+
+//     const selectedMap = maps[sel];
+//     graph.fromMap(selectedMap.tiles);
+
+//     svgCanvas.setViewBox({
+//       x: 0,
+//       y: 0,
+//       width: graph.width,
+//       height: graph.height
+//     });
+
+//     svgCanvas.layers.tile.innerHTML = '';
+
+//     graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
+//       if (tileType === 'start') {
+//         actor1.setAttribute('transform', `translate(${x},${y})`);
+//       }
+
+//       svgCanvas.layers.tile.append(
+//         svgCanvas.createRect({
+//           width: 1,
+//           height: 1,
+//           textContent: `${x},${y}`,
+//           classList: ['tile'],
+//           dataset: {
+//             tileType,
+//             x: x,
+//             y: y,
+//             current: false,
+//             active: false,
+//             isPathNode: false,
+//           },
+//         }))
+//     });
+//   }),
+// ).subscribe()
 
 pointerup$.pipe(
   tap(x => pageScrolling.enable()),
@@ -434,16 +440,6 @@ svgCanvas.addEventListener('click', async ({ detail }) => {
 });
 
 
-const saveButton = document.querySelector('#save-map')
-saveButton.addEventListener('click', e => {
-  e.preventDefault()
-  e.stopPropagation()
-  e.stopImmediatePropagation()
-  
-  const graphOut = graph.toMap();
-  copyTextToClipboard(graphOut)
-  console.warn('graphOut\n\n', graphOut)
-});
 
 
 contextMenu.addEventListener('click', e => {
@@ -483,7 +479,7 @@ contextMenu.addEventListener('click', e => {
   
   deselectRange()
   
-  
+  selectionBox.remove()
   
   contextMenu.dataset.show = false;
 });
@@ -514,8 +510,11 @@ svgCanvas.layers.tile.addEventListener('contextmenu', e => {
     
     console.log(pageScrolling.isEnabled)
     if (contextMenu.dataset.show === 'true') {
-      // targ.dataset.selected = false;
+      
       deselectRange()
+      
+      selectionBox.remove()
+      
       contextMenu.dataset.show = false;
       contextMenu.setAttribute('transform', `translate(0,0) rotate(0) scale(0.05)`);
       

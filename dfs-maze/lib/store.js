@@ -1,7 +1,7 @@
 import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
 const { template, utils, download } = ham;
 
-export const TILE_TYPE_NAME_INDEX = [
+export const TILE_TYPE_INDEX = [
   'empty',
   'barrier',
   'start',
@@ -31,9 +31,11 @@ export class GraphNode {
   
   get tileType() { return this.#tileType }
   
+  get isEmpty() { return ['empty'].includes(this.#tileType) }
+  
   get isTraversable() { return !['barrier'].includes(this.#tileType) }
   
-  get address() { return [this.x, this.y].toString() }
+  get address() { return [this.x, this.y].join('_') }
   
   get x() { return this.#point.x }
   
@@ -118,11 +120,11 @@ export class Graph {
   get targetNode() { return this.nodes.find(n => n.tileType === 'target'); }
   
   pointToAddress({ x, y }) {
-    return [x, y].toString();
+    return [x, y].join('_');
   }
   
-  addressToPoint(address) {
-    return address.split(',').map(_ => +_);
+  addressToPoint(address='') {
+    return (address.includes(',') ? address.split(',').map(_ => +_) : address.split('_')).map(_ => +_);
   }
   
   getNodeByAddress(address) {
@@ -142,14 +144,14 @@ export class Graph {
     
     for (let x = start.x; x < end.x; x++) {
       for (let y = start.y; y < end.y; y++) {
-        const tile = this.getNodeAtPoint({x, y});
+        const tile = this.getNodeAtPoint({ x, y });
         
-        tile.dataset.selected = true;
+        tile.selected = true;
         // if (updateFn) {
         //   updateFn(tile)
         // }
         
-        this.activeRange.push(tile);
+        // this.activeRange.push(tile);
       }
     }
     
@@ -325,11 +327,11 @@ export class Graph {
     
     map.forEach((row, rowNumber) => {
       row.forEach((typeId, columnNumber) => {
-        const tileType = TILE_TYPE_NAME_INDEX[typeId];
+        const tileType = TILE_TYPE_INDEX[typeId];
         
         if (tileType === 'teleport') {
           const node = new TeleportNode({
-            tileType: TILE_TYPE_NAME_INDEX[typeId],
+            tileType: TILE_TYPE_INDEX[typeId],
             x: columnNumber,
             y: rowNumber,
             selected: false,
@@ -337,7 +339,7 @@ export class Graph {
         }
         
         const node = new GraphNode({
-          tileType: TILE_TYPE_NAME_INDEX[typeId],
+          tileType: TILE_TYPE_INDEX[typeId],
           x: columnNumber,
           y: rowNumber,
           selected: false,
@@ -346,7 +348,7 @@ export class Graph {
         this.#nodes.set(node.address, node);
       });
     });
-    
+    console.warn('this.#nodes.entries()', [...this.#nodes.entries()])
     this.height = map.length
     this.width = map[0].length
   }
@@ -355,12 +357,12 @@ export class Graph {
     const output = new Array(this.height).fill(null).map(_ => new Array(this.width).fill(null));
     // const charMapOutput = new Array(this.height).fill(null).map(_ => new Array(this.width).fill(null));
     
-    const tileTypes = TILE_TYPE_NAME_INDEX.reduce((acc, curr, i) => {
+    const tileTypes = TILE_TYPE_INDEX.reduce((acc, curr, i) => {
       return { ...acc, [curr]: i }
     }, {});
     
     [...this.#nodes].forEach(([addressKey, node], i) => {
-      const [x, y] = addressKey.split(',').map(_ => +_);
+      const [x, y] = (addressKey.includes(',') ? addressKey.split(',').map(_ => +_) : addressKey.split('_')).map(_ => +_)
       output[y][x] = formatAsCharMatrix ? tileTypes[node.tileType] : node
       // charMapOutput[y][x] = tileTypes[node.tileType]
     });

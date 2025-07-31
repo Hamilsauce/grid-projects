@@ -1,4 +1,4 @@
-import { Graph, TILE_TYPE_NAME_INDEX } from './lib/store.js';
+import { Graph, TILE_TYPE_INDEX } from './lib/store.js';
 import { SVGCanvas } from './lib/SVGCanvas.js';
 import { MAP_9X15_1, BLANK_MAP_9X15_1, maps } from './maps.js';
 
