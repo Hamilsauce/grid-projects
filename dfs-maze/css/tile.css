@@ -21,7 +21,7 @@
 .tile[data-is-path-node=true] rect {
   /* fill: #FFF2B382; */
   animation: yellowToOriginal 5s forwards;
-
+  
 }
 
 .tile[data-is-path-node=true] text {
@@ -83,7 +83,7 @@
   fill: #12B582;
 }
 
-.tile[data-selected=true] > rect{
+.tile[data-selected=true]>rect {
   /* stroke: #16EC1A; */
   /* stroke-width: 0.5px; */
   fill: #16EC1A;
@@ -92,23 +92,34 @@
 
 @keyframes yellowToOriginal {
   0% {
+    /* filter: blur(20px); */
+  }
+  
+  8% {
     fill: #46C2F4BF;
     filter: hue-rotate(0deg);
     /* filter: hue-rotate(-240deg); */
   }
-  10% {
+  
+  15% {
     /* fill: #46C6F4BF; */
     fill: #46C2F43D;
-
-    filter: hue-rotate(0deg); /* example: rotates back to blue */
-    filter: hue-rotate(-240deg); /* example: rotates back to blue */
+    
+    filter: hue-rotate(0deg);
+    /* example: rotates back to blue */
+    filter: hue-rotate(-240deg);
+    /* example: rotates back to blue */
   }
+  
   35% {
-    filter: hue-rotate(0deg); /* example: rotates back to blue */
-
+    filter: hue-rotate(0deg);
+    /* example: rotates back to blue */
+    
     /* fill: yellow; */
-    /* filter: hue-rotate(0deg); */ /* example: rotates back to blue */
+    /* filter: hue-rotate(0deg); */
+    /* example: rotates back to blue */
   }
+  40% {}
 }
 
 .rect-animate {

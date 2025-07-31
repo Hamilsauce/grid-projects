@@ -44,7 +44,7 @@
 .actor[data-teleporting=false] * {
   /* r: 0.4; */
   
-  transition: 0.0s;
+  /* transition: 0.5s; */
 }
 
 .actor[data-teleporting=true],
@@ -52,6 +52,4 @@
   fill: #783BC1;
   r: 0.01;
   stroke-width: 0.00px;
-
-  /* transition: 0.5s; */
 }
