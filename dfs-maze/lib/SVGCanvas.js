@@ -198,8 +198,12 @@ export class SVGCanvas extends EventTarget {
   setViewBox({ x = 0, y = 0, width = 100, height = 100 }) {
     Object.assign(this.viewBox, { x, y, width, height, });
     
-    this.surface.setAttribute('width', width);
-    this.surface.setAttribute('height', height);
+    setTimeout(() => {
+    const tileBB = this.layers.tile.getBBox()
+    console.warn('tileBB', tileBB)
+    this.surface.setAttribute('transform', `translate(0,0) rotate(0) scale(${tileBB.width/10},${tileBB.height/15})`)
+    // this.surface.setAttribute('height', this.scene.getAttribute('height'))
+    }, 0)
     
     return this;
   }

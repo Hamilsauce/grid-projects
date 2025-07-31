@@ -1,17 +1,10 @@
 import { Graph, TILE_TYPE_INDEX } from './lib/store.js';
 import { SVGCanvas } from './lib/SVGCanvas.js';
-import { MAP_9X15_1, BLANK_MAP_9X15_1, maps, mapStorageFormatter } from './maps.js';
+import { maps } from './maps.js';
 import { copyTextToClipboard } from '../dfs-maze/lib/utils.js';
 import { getTileSelector } from '../selection-box/SelectionBox.js';
 import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
-// import { db, doc, collection, setDoc } from '../../fbase.js'
 import { initMapControls } from '../dfs-maze/ui/map-selection.js';
-
-
-// import { storeMaps } from '../dfs-maze/map.service.js';
-
-// const ids = await storeMaps();
-
 
 const { sleep, template, utils, download, TwoWayMap } = ham;
 
@@ -66,15 +59,13 @@ const getAspectRatio = (svgCanvas) => {
 const ANIM_RATE = 75
 
 const app = document.querySelector('#app');
-const appBody = document.querySelector('#app-body')
+const appBody = app.querySelector('#app-body')
 
 const canvasEl = document.querySelector('#canvas');
-// const svgCanvas = new SVGCanvas(canvasEl)
 const svgCanvas = new SVGCanvas(canvasEl)
-const scene = document.querySelector('#scene');
+const scene = svgCanvas.dom.querySelector('#scene');
 const tileLayer = scene.querySelector('#tile-layer');
-const surfaceLayer = scene.querySelector('#surface-layer');
-// const mapInput = document.querySelector('#map-input');
+// const surfaceLayer = scene.querySelector('#surface-layer');
 const objectLayer = scene.querySelector('#object-layer');
 
 const selectionBox = getTileSelector(objectLayer)
@@ -178,61 +169,16 @@ const sceneBBox = scene.getBBox();
 const canvasViewBox = svgCanvas.viewBox;
 
 svgCanvas.setViewBox({
-  width: graph.width,
-  height: graph.height
+  x: -0.5,
+  y: -0.5,
+  width: graph.width+1,
+  height: graph.height+1
 })
 
 svgCanvas.setCanvasDimensions()
 
-// console.warn({
-//   sceneBCR,
-//   sceneBBox,
-//   canvasViewBox
-// });
-
-// const mapInput$ = fromEvent(mapInput, 'change')
 const pointerDown$ = fromEvent(svgCanvas, 'click')
 const pointerup$ = fromEvent(svgCanvas, 'pointerup')
-
-// mapInput$.pipe(
-//   tap(({ target }) => {
-//     const sel = target.selectedOptions[0].value;
-
-//     const selectedMap = maps[sel];
-//     graph.fromMap(selectedMap.tiles);
-
-//     svgCanvas.setViewBox({
-//       x: 0,
-//       y: 0,
-//       width: graph.width,
-//       height: graph.height
-//     });
-
-//     svgCanvas.layers.tile.innerHTML = '';
-
-//     graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
-//       if (tileType === 'start') {
-//         actor1.setAttribute('transform', `translate(${x},${y})`);
-//       }
-
-//       svgCanvas.layers.tile.append(
-//         svgCanvas.createRect({
-//           width: 1,
-//           height: 1,
-//           textContent: `${x},${y}`,
-//           classList: ['tile'],
-//           dataset: {
-//             tileType,
-//             x: x,
-//             y: y,
-//             current: false,
-//             active: false,
-//             isPathNode: false,
-//           },
-//         }))
-//     });
-//   }),
-// ).subscribe()
 
 pointerup$.pipe(
   tap(x => pageScrolling.enable()),
@@ -246,7 +192,7 @@ graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
     svgCanvas.createRect({
       width: 1,
       height: 1,
-      textContent: `${x},${y}`,
+      // textContent: `${x},${y}`,
       classList: ['tile'],
       dataset: {
         tileType,
@@ -259,6 +205,11 @@ graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
     }))
 });
 
+const lastX = tileLayer.lastElementChild.dataset.x
+const lastY = tileLayer.lastElementChild.dataset.y
+tileLayer.dataset.width = lastX
+tileLayer.dataset.height = lastY
+// new HTMLElement().lastElementChild
 let isMoving = false;
 
 

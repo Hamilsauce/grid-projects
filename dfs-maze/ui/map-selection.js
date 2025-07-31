@@ -54,7 +54,7 @@ export const initMapControls = (graph, svgCanvas, actor1) => {
           svgCanvas.createRect({
             width: 1,
             height: 1,
-            textContent: `${x},${y}`,
+            // textContent: `${x},${y}`,
             classList: ['tile'],
             dataset: {
               tileType,
