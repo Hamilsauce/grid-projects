@@ -468,7 +468,7 @@ contextMenu.addEventListener('click', e => {
       y: +tile.dataset.y,
     })
     
-    node.setType(selectedTileTypeName);
+    nodeModel.setType(selectedTileTypeName);
     
     tile.dataset.tileType = selectedTileTypeName;
   });
