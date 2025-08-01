@@ -5,20 +5,12 @@ import { copyTextToClipboard } from '../dfs-maze/lib/utils.js';
 import { getTileSelector } from '../selection-box/SelectionBox.js';
 import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
 import { initMapControls } from '../dfs-maze/ui/map-selection.js';
+import { scheduleOscillator, AudioNote, audioEngine } from '../audio/index.js';
 
 const { sleep, template, utils, download, TwoWayMap } = ham;
 
 const { forkJoin, Observable, iif, BehaviorSubject, AsyncSubject, Subject, interval, of, fromEvent, merge, empty, delay, from } = rxjs;
 const { flatMap, reduce, groupBy, toArray, mergeMap, switchMap, scan, map, tap, filter } = rxjs.operators;
-
-const graph = new Graph(maps.BIG_ASS_MAP.tiles);
-
-const domPoint = (element, x, y) => {
-  return new DOMPoint(x, y).matrixTransform(
-    element.getScreenCTM().inverse()
-  )
-};
-
 
 const useTemplate = (templateName, options = {}) => {
   const el = document.querySelector(`[data-template="${templateName}"]`).cloneNode(true)
@@ -32,6 +24,46 @@ const useTemplate = (templateName, options = {}) => {
   if (options.fill) el.style.fill = options.fill
   
   return el;
+};
+
+
+const audioNote1 = (new AudioNote(audioEngine))
+// .at(audioEngine.currentTime + 0.2)
+// .frequencyHz(440)
+// .duration(0.5)
+// .velocity(0.7).play()
+
+// setInterval(() => {
+//   audioNote1
+//     .at(audioEngine.currentTime + 0.2)
+//     .frequencyHz(440)
+//     .duration(0.5)
+//     .velocity(0.7).play()
+
+// }, 500)
+
+
+const graph = new Graph(maps.BIG_ASS_MAP.tiles);
+const canvasEl = document.querySelector('#canvas');
+const svgCanvas = new SVGCanvas(canvasEl)
+
+const actor1 = useTemplate('actor', {
+  dataset: { moving: false, teleporting: false },
+  id: 'actor1'
+});
+
+const actor2 = useTemplate('actor', {
+  dataset: { moving: false, teleporting: false },
+  fill: '#C1723B',
+  id: 'actor2'
+});
+
+initMapControls(graph, svgCanvas, actor1)
+
+const domPoint = (element, x, y) => {
+  return new DOMPoint(x, y).matrixTransform(
+    element.getScreenCTM().inverse()
+  )
 };
 
 const setCanvasDimensions = (svgCanvas) => {
@@ -61,11 +93,9 @@ const ANIM_RATE = 75
 const app = document.querySelector('#app');
 const appBody = app.querySelector('#app-body')
 
-const canvasEl = document.querySelector('#canvas');
-const svgCanvas = new SVGCanvas(canvasEl)
+
 const scene = svgCanvas.dom.querySelector('#scene');
 const tileLayer = scene.querySelector('#tile-layer');
-// const surfaceLayer = scene.querySelector('#surface-layer');
 const objectLayer = scene.querySelector('#object-layer');
 
 const selectionBox = getTileSelector(objectLayer)
@@ -82,7 +112,6 @@ const deselectRange = () => {
 }
 
 const getRange = ({ start, end }) => {
-  // const tileContainer = document.querySelector('#tile-container');
   let range = [];
   
   deselectRange()
@@ -102,9 +131,10 @@ const getRange = ({ start, end }) => {
 
 
 selectionBox.on('selection', range => {
-  console.warn('SELECTION: ', selectionBox.boundingBox)
   selectedRange = getRange(range);
+  
   const { startPoint, endPoint } = selectionBox
+  
   contextMenu.setAttribute(
     'transform',
     `translate(${endPoint.x+1.5},${endPoint.y-5}) rotate(0) scale(0.05)`,
@@ -125,7 +155,6 @@ const pageScrolling = {
     svgCanvas.dom.style.touchAction = ''
     document.body.style.userSelect = ''
     svgCanvas.dom.style.userSelect = ''
-    
   },
   
   disable() {
@@ -135,27 +164,8 @@ const pageScrolling = {
     svgCanvas.dom.style.touchAction = 'none'
     document.body.style.userSelect = 'none'
     svgCanvas.dom.style.userSelect = 'none'
-    
-    svgCanvas.dom.style.touchAction = 'none'
-    console.warn('svgCanvas.dom.style.touchAction ', svgCanvas.dom.style.touchAction)
-    
   }
-  
 }
-
-
-const actor1 = useTemplate('actor', {
-  dataset: { moving: false, teleporting: false },
-  id: 'actor1'
-});
-
-const actor2 = useTemplate('actor', {
-  dataset: { moving: false, teleporting: false },
-  fill: '#C1723B',
-  id: 'actor2'
-});
-
-initMapControls(graph, svgCanvas, actor1)
 
 actor2.setAttribute('transform', 'translate(12,21) rotate(0) scale(1)')
 
@@ -171,13 +181,12 @@ const canvasViewBox = svgCanvas.viewBox;
 svgCanvas.setViewBox({
   x: -0.5,
   y: -0.5,
-  width: graph.width+1,
-  height: graph.height+1
+  width: graph.width + 1,
+  height: graph.height + 1
 })
 
 svgCanvas.setCanvasDimensions()
 
-const pointerDown$ = fromEvent(svgCanvas, 'click')
 const pointerup$ = fromEvent(svgCanvas, 'pointerup')
 
 pointerup$.pipe(
@@ -192,7 +201,6 @@ graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
     svgCanvas.createRect({
       width: 1,
       height: 1,
-      // textContent: `${x},${y}`,
       classList: ['tile'],
       dataset: {
         tileType,
@@ -205,27 +213,31 @@ graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
     }))
 });
 
-const lastX = tileLayer.lastElementChild.dataset.x
-const lastY = tileLayer.lastElementChild.dataset.y
-tileLayer.dataset.width = lastX
-tileLayer.dataset.height = lastY
-// new HTMLElement().lastElementChild
+const lastX = tileLayer.lastElementChild.dataset.x;
+const lastY = tileLayer.lastElementChild.dataset.y;
+tileLayer.dataset.width = lastX;
+tileLayer.dataset.height = lastY;
 let isMoving = false;
 
 
 const goalTile = tileLayer.querySelector('[data-tile-type="goal"]');
 
+const oppositeDirMap = new TwoWayMap([
+  ['up', 'down'],
+  ['left', 'right'],
+]);
+
+
 svgCanvas.addEventListener('click', async ({ detail }) => {
   if (isMoving) return;
   if (contextMenu.dataset.show === 'true') return;
   
+  deselectRange();
   
-  // selectedRange.forEach((t, i) => {
-  //   t.dataset.selected = false;
-  // });
-  deselectRange()
-  selectedRange = []
-  selectionBox.remove()
+  selectedRange = [];
+  
+  selectionBox.remove();
+  
   let tile = detail.target.closest('.tile');
   let activeActor;
   
@@ -273,19 +285,14 @@ svgCanvas.addEventListener('click', async ({ detail }) => {
   
   const targetNode = graph.getNodeAtPoint({ x: +targetNodeEl.dataset.x, y: +targetNodeEl.dataset.y });
   
-  const dfsPath = graph.getPath(startNode, targetNode);
+  const bfsPath = graph.getPath(startNode, targetNode);
   
-  if (dfsPath === null) {
+  if (bfsPath === null) {
     return
   }
   
-  let oppositeDirMap = new TwoWayMap([
-    ['up', 'down'],
-    ['left', 'right'],
-  ]);
-  
   let pointer = 0;
-  let curr = dfsPath;
+  let curr = bfsPath;
   
   let path = [];
   
@@ -296,7 +303,7 @@ svgCanvas.addEventListener('click', async ({ detail }) => {
   }
   
   path.reverse();
-  curr = dfsPath[pointer];
+  curr = bfsPath[pointer];
   
   isMoving = true;
   activeActor.dataset.moving = isMoving;
@@ -306,15 +313,37 @@ svgCanvas.addEventListener('click', async ({ detail }) => {
     let dy;
     
     let intervalHandle = setInterval(async () => {
-      curr = dfsPath[pointer];
+      curr = bfsPath[pointer];
+      audioNote1.velocity(0.01).play()
       
       if (!curr) {
-        clearInterval(intervalHandle);
         isMoving = false;
         activeActor.dataset.moving = isMoving;
+        clearInterval(intervalHandle);
       }
       
       else {
+        
+        const freqX = ((curr.x + 2) * 2) // < 120 ? 120 : ((curr.x + 1) * 2)
+        const freqY = ((curr.y + 2) * 2) // < 120 ? 120 : ((curr.y + 1) * 1.5)
+        
+        let freq = ((freqX) * (freqY)) * 1.5
+        freq = freq < 250 ? freq + 200 : freq
+        freq = freq > 1600 ? 1200 - freq : freq
+        
+        let vel = (0.7 - (pointer / bfsPath.length))
+        vel = vel >= 0.7 ? 0.7 : vel
+        
+        vel = vel <= 0.15 ? 0.15 : vel
+        const dur = 2 / bfsPath.length
+        const startMod = ((pointer || 1) * 0.01)
+        audioNote1
+          // .at(audioEngine.currentTime + ((pointer/bfsPath.length) * 0.05))
+          .at(audioEngine.currentTime + startMod)
+          .frequencyHz(freq)
+          .duration(0.15)
+          .velocity(vel).play()
+        
         const el = svgCanvas.querySelector(`.tile[data-x="${curr.x}"][data-y="${curr.y}"]`);
         
         const lastX = +activeActor.dataset.x
@@ -322,6 +351,7 @@ svgCanvas.addEventListener('click', async ({ detail }) => {
         
         activeActor.dataset.x = curr.x
         activeActor.dataset.y = curr.y
+        
         activeActor.setAttribute(
           'transform',
           `translate(${curr.x},${curr.y}) rotate(0) scale(1)`
@@ -341,12 +371,18 @@ svgCanvas.addEventListener('click', async ({ detail }) => {
         pointer++;
         
         if (el === goalTile) {
-          // console.warn('----- GOAL FOUND -----');
+          console.warn('----- GOAL FOUND -----');
+          
         }
         
         if (el === targetNodeEl) {
           el.dataset.active = true;
           el.dataset.current = true;
+          // audioNote1
+          //   .at(audioEngine.currentTime + 0.2)
+          //   .frequencyHz(900)
+          //   .duration(1)
+          //   .velocity(0.7).play()
           
           return
         }
@@ -374,6 +410,15 @@ svgCanvas.addEventListener('click', async ({ detail }) => {
             'transform',
             `translate(${el.dataset.x},${el.dataset.y}) rotate(0) scale(1)`,
           );
+          
+          
+          
+          // audioNote1
+          //   .at(audioEngine.currentTime + 0.2)
+          //   .frequencyHz(+el.dataset.y * 50)
+          //   .duration(0.2)
+          //   .velocity(0.7).play()
+          
           
           el.dataset.active = false;
           el.dataset.current = false;

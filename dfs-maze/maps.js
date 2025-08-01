@@ -63,7 +63,10 @@ export const MAP_9X15_1 = {
 
 export const BIG_ASS_MAP = {
   name: 'Big Ass Map',
-  tileData: {},
+  tileData: {
+    '0_2': { type: 'teleport', target: { x: 12, y: 0 } },
+    '12_0': { type: 'teleport', target: { x: 0, y: 2 } },
+  },
   tiles: [
     [2, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 4],
     [0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -92,7 +95,9 @@ export const BIG_ASS_MAP = {
 
 export const suk = {
   name: 'suk',
-  tileData: {},
+  tileData: {
+    '0_2': { type: 'teleport', target: { x: 12, y: 0 } }
+  },
   tiles: [
     [2, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0],
     [0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -144,7 +149,7 @@ export const mapStorageFormatter = ({ name, tiles, tileData }) => {
   
   return {
     name,
-    tileData, //: isObjectEmpty(tileData) ? null : tileData,
+    tileData,
     tiles: flat,
     width,
     height

@@ -2,6 +2,7 @@
   /* opacity: 1; */
   /* transition: 0.125s ease-out; */
   /* transition: 0.15s ease-out; */
+
 }
 
 .actor {
@@ -33,7 +34,7 @@
 .actor[data-moving=true][data-teleporting=false] * {
   fill: #38DD17;
   /* filter: brightness(1.5); */
-  r: 0.35;
+  r: 0.3;
   /* transform: scale(1, 1.2); */
   transition: 0.125s ease-out;
   
@@ -44,7 +45,7 @@
 .actor[data-teleporting=false] * {
   /* r: 0.4; */
   
-  /* transition: 0.5s; */
+  transition: 0.5s;
 }
 
 .actor[data-teleporting=true],

@@ -1,5 +1,7 @@
-import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
-const { template, utils, download } = ham;
+
+/*
+  Graph.js model - data structure used as map model
+*/
 
 export const TILE_TYPE_INDEX = [
   'empty',
@@ -58,33 +60,12 @@ export class GraphNode {
   }
 }
 
-export class Neighbor {
-  #node = null;
-  #visited = false;
-  
-  constructor(node, visited = false) {
-    this.#node = node;
-    this.#visited = visited;
-  }
-  
-  get node() { return this.#node }
-  
-  get visited() { return this.#visited }
-  
-  visit() {
-    this.#visited = true;
-  }
-}
-
 export class TeleportNode extends GraphNode {
   #target = null;
-  #linkedNodeAddress = null;
   
   constructor({ target, ...nodeState }) {
     super(nodeState);
     this.#target = target;
-    this.#linkedNodeAddress = target ? [target.x, target.y].join('_') : null;
-    // this.#visited = visited;
   }
   
   get linkedNodeAddress() { return this.#target ? [this.#target.x, this.#target.y].join('_') : null; }
@@ -102,11 +83,7 @@ export class TeleportNode extends GraphNode {
     this.#linkedNodeAddress = null;
     return address
   }
-  
 }
-
-
-
 
 export class Graph {
   #nodes = new Map();
@@ -152,6 +129,7 @@ export class Graph {
     return this.getNodeByAddress(this.pointToAddress({ x, y }))
   }
   
+  // used for selecting ranges (in ui)
   getRange({ start, end }, updateFn) {
     let range = [];
     
@@ -160,11 +138,6 @@ export class Graph {
         const tile = this.getNodeAtPoint({ x, y });
         
         tile.selected = true;
-        // if (updateFn) {
-        //   updateFn(tile)
-        // }
-        
-        // this.activeRange.push(tile);
       }
     }
     
@@ -173,16 +146,15 @@ export class Graph {
   
   getNeighbor(node, dirName = '') {
     if (dirName === 'remote') {
-      const tele = this.findNode((n) => n !== node && n.tileType === 'teleport')
-      return tele
+      return this.findNode((n) => n !== node && n.tileType === 'teleport')
     }
+    
     const { x, y } = DIRECTIONS.get(dirName);
     
     const n = this.getNodeAtPoint({
       x: node.x + x,
       y: node.y + y,
     });
-    
     
     if (!n || !n.isTraversable) return null;
     
@@ -206,49 +178,19 @@ export class Graph {
     return node ? ([...this.getNeighbors(node).entries()] || []).filter(([k, v]) => v && !v.previous && v.isVisited === false) : [];
   }
   
+  // used by consumers for path finding
   getPath(node = this.startNode, stopNode) {
     this.resetPath();
     return this.bfsShortestPath(node, stopNode)
-    // return this.shortestPathDfs(node, stopNode)
   };
   
-  toLinkedList(lastNode) {
-    let pointer = 0;
-    let curr = lastNode;
-    let path = [];
-    
-    while (curr) {
-      let previous = curr.previous
-      if (previous) {
-        previous.next = curr;
-        delete curr.previous
-      }
-      curr = previous;
-    }
-    
-    return curr;
-  };
-  
-  pathToQueue(lastNode) {
-    let pointer = 0;
-    let curr = lastNode;
-    let path = [];
-    
-    while (curr) {
-      let previous = curr.previous
-      path.push(curr);
-      curr = previous;
-    }
-    
-    path.reverse();
-    curr = path[pointer];
-  };
-  
+  // Current path finding impl
   bfsShortestPath(start, goal) {
     const queue = [
       [start]
-    ]; // queue of paths
-    const visited = new Set(); // to avoid revisiting nodes
+    ];
+    
+    const visited = new Set();
     
     while (queue.length > 0) {
       const path = queue.shift(); // FIFO
@@ -274,52 +216,6 @@ export class Graph {
     return null; // no path found
   }
   
-  shortestPathDfs(node, stopNode) {
-    //node = this.startNode, stopNode = this.goalNode) {
-    // node.isPathNode = true;
-    node.isVisited = true;
-    
-    if (node === stopNode) {
-      return node;
-    }
-    
-    
-    let unvisitedNeighbors = this.getUnvisitedNeighbors(node);
-    
-    if (unvisitedNeighbors.length == 0 && node.previous) {
-      node.isPathNode = false;
-      node.isVisited = true;
-      node = node.previous;
-      
-      unvisitedNeighbors = this.getUnvisitedNeighbors(node);
-      
-      while (node && unvisitedNeighbors.length === 0) {
-        node.isPathNode = false;
-        node.isVisited = true;
-        node = node.previous;
-        
-        unvisitedNeighbors = this.getUnvisitedNeighbors(node);
-      }
-      
-      return this.shortestPathDfs(node, stopNode);
-    }
-    
-    else {
-      for (let [direction, neighbor] of unvisitedNeighbors) {
-        neighbor.previous = node;
-        
-        if (unvisitedNeighbors.length > 0) {
-          return this.shortestPathDfs(neighbor, stopNode);
-        }
-        
-        else {
-          return node
-        }
-      }
-    }
-    return node; /* If no path, return null */
-  }
-  
   resetPath() {
     this.nodes.forEach((n, i) => {
       n.isVisited = false;
@@ -329,51 +225,12 @@ export class Graph {
     });
   }
   
-  fromStoredMap({
-    name,
-    tileData,
-    tiles: tileChars,
-    width,
-    height
-  }) {
-    this.#nodes.clear()
-    this.name = name
-    this.width = width
-    this.height = height
-
-    map.forEach((row, rowNumber) => {
-      row.forEach((typeId, columnNumber) => {
-        const tileType = TILE_TYPE_INDEX[typeId];
-        
-        if (tileType === 'teleport') {
-          const node = new TeleportNode({
-            tileType: TILE_TYPE_INDEX[typeId],
-            x: columnNumber,
-            y: rowNumber,
-            selected: false,
-          });
-        }
-        
-        const node = new GraphNode({
-          tileType: TILE_TYPE_INDEX[typeId],
-          x: columnNumber,
-          y: rowNumber,
-          selected: false,
-        });
-        
-        this.#nodes.set(node.address, node);
-      });
-    });
-    // console.warn('this.#nodes.entries()', [...this.#nodes.entries()])
-    // this.height = map.length
-    // this.width = map[0].length
-  }
-  
+  // Create graph from digit matrix - currently how it works
   fromMap(map = []) {
     this.#nodes.clear()
     
-    const height = map.length;
-    const width = map[0].length;
+    this.height = map.length
+    this.width = map[0].length
     
     map.forEach((row, rowNumber) => {
       row.forEach((typeId, columnNumber) => {
@@ -398,14 +255,11 @@ export class Graph {
         this.#nodes.set(node.address, node);
       });
     });
-    console.warn('this.#nodes.entries()', [...this.#nodes.entries()])
-    this.height = map.length
-    this.width = map[0].length
   }
   
+  // For printing and storing in old format
   toMap(formatAsCharMatrix = true) {
     const output = new Array(this.height).fill(null).map(_ => new Array(this.width).fill(null));
-    // const charMapOutput = new Array(this.height).fill(null).map(_ => new Array(this.width).fill(null));
     
     const tileTypes = TILE_TYPE_INDEX.reduce((acc, curr, i) => {
       return { ...acc, [curr]: i }
@@ -414,20 +268,185 @@ export class Graph {
     [...this.#nodes].forEach(([addressKey, node], i) => {
       const [x, y] = (addressKey.includes(',') ? addressKey.split(',').map(_ => +_) : addressKey.split('_')).map(_ => +_)
       output[y][x] = formatAsCharMatrix ? tileTypes[node.tileType] : node
-      // charMapOutput[y][x] = tileTypes[node.tileType]
     });
     
-    const outputJSON = JSON.stringify(output)
-    // const output = [...this.#nodes.entries()].reduce((acc, [address, node], i) => {
-    //     const [x, y] = address.split(',').map(_ => +_);
-    //     console.warn('x, y', typeof x, typeof y)
-    //     // console.warn(acc)
-    //     // if (!(acc[y])) {
-    //     //   acc[y] = new Array(this.width).fill(null)
-    //     // }
-    //     acc[y][x] = node
-    //   }, new Array(this.height).fill(null).map(_ => new Array(this.width).fill(null)));
+    const outputJSON = JSON.stringify(output);
     
     return outputJSON;
   }
 }
+
+
+/*
+  script.js - snippet from the ui/view handling that 
+  starts the loop every click running against the graph/map
+*/
+
+svgCanvas.addEventListener('click', async ({ detail }) => {
+  if (isMoving) return;
+  if (contextMenu.dataset.show === 'true') return;
+  
+  deselectRange();
+  
+  selectedRange = [];
+  
+  selectionBox.remove();
+  
+  let tile = detail.target.closest('.tile');
+  let activeActor;
+  
+  const actorTarget = detail.target.closest('.actor');
+  
+  if (actorTarget) {
+    const actors = [...scene.querySelectorAll('.actor')];
+    activeActor = actors.find(t => actorTarget != t);
+    tile = svgCanvas.querySelector(`.tile[data-x="${actorTarget.dataset.x}"][data-y="${actorTarget.dataset.y}"]`);
+  }
+  else {
+    activeActor = actor1;
+  }
+  
+  const pathNodes = svgCanvas.querySelectorAll('.tile[data-is-path-node="true"]');
+  
+  pathNodes.forEach((el, i) => { el.dataset.isPathNode = false });
+  
+  if (tile && tile.dataset.tileType !== 'barrier') {
+    const activeTiles = svgCanvas.querySelectorAll('.tile[data-active="true"]');
+    const highlightedTiles = svgCanvas.querySelectorAll('.tile[data-highlight="true"]');
+    
+    activeTiles.forEach((el, i) => { el.dataset.active = false });
+    highlightedTiles.forEach((el, i) => { el.dataset.highlight = false });
+    
+    const pt = { x: +tile.dataset.x, y: +tile.dataset.y }
+    
+    const tileNode = graph.getNodeAtPoint(pt);
+    
+    const neighbors = graph.getNeighbors(tileNode);
+    
+    tile.dataset.active = true;
+    
+    [...neighbors.values()].forEach((node, i) => {
+      const el = svgCanvas.querySelector(`.tile[data-x="${node.x}"][data-y="${node.y}"]`)
+      el.dataset.highlight = true;
+    });
+  }
+  
+  const startNodeEl = svgCanvas.querySelector('.tile[data-current="true"]') || svgCanvas.querySelector('.tile[data-tile-type="start"]');
+  
+  const targetNodeEl = actorTarget ? tile : svgCanvas.querySelector('.tile[data-active="true"]');
+  
+  const startNode = graph.getNodeAtPoint({ x: +startNodeEl.dataset.x, y: +startNodeEl.dataset.y });
+  
+  const targetNode = graph.getNodeAtPoint({ x: +targetNodeEl.dataset.x, y: +targetNodeEl.dataset.y });
+  
+  const bfsPath = graph.getPath(startNode, targetNode);
+  
+  if (bfsPath === null) {
+    return
+  }
+  
+  let pointer = 0;
+  let curr = bfsPath;
+  
+  let path = [];
+  
+  while (curr) {
+    let previous = curr.previous
+    path.push(curr);
+    curr = previous;
+  }
+  
+  path.reverse();
+  curr = bfsPath[pointer];
+  
+  isMoving = true;
+  activeActor.dataset.moving = isMoving;
+  
+  if (isMoving) {
+    let dx;
+    let dy;
+    
+    let intervalHandle = setInterval(async () => {
+      curr = bfsPath[pointer];
+      
+      if (!curr) {
+        isMoving = false;
+        activeActor.dataset.moving = isMoving;
+        clearInterval(intervalHandle);
+      }
+      
+      else {
+        const el = svgCanvas.querySelector(`.tile[data-x="${curr.x}"][data-y="${curr.y}"]`);
+        
+        const lastX = +activeActor.dataset.x
+        const lastY = +activeActor.dataset.y
+        
+        activeActor.dataset.x = curr.x
+        activeActor.dataset.y = curr.y
+        activeActor.setAttribute(
+          'transform',
+          `translate(${curr.x},${curr.y}) rotate(0) scale(1)`
+        );
+        
+        svgCanvas.panViewport({
+          x: (curr.x - (svgCanvas.viewBox.width / 2)) * 0.025,
+          y: (curr.y - (svgCanvas.viewBox.height / 2)) * 0.025,
+        })
+        
+        if (el === startNodeEl) {
+          startNodeEl.dataset.current = false;
+        }
+        
+        el.dataset.isPathNode = true;
+        
+        pointer++;
+        
+        if (el === goalTile) {
+          console.warn('----- GOAL FOUND -----');
+        }
+        
+        if (el === targetNodeEl) {
+          el.dataset.active = true;
+          el.dataset.current = true;
+          
+          return
+        }
+        
+        if (el.dataset.tileType === 'teleport') {
+          actor1.dataset.teleporting = true;
+          
+          if (el === startNodeEl) {
+            el.dataset.active = false;
+            el.dataset.current = false;
+            
+            return
+          }
+          
+          el.dataset.active = true;
+          el.dataset.current = true;
+          
+          const tels = [...svgCanvas.querySelectorAll('.tile[data-tile-type="teleport"]')];
+          const otherTele = tels.find(t => el != t && t.dataset.current != 'true');
+          
+          activeActor.dataset.x = el.dataset.x;
+          activeActor.dataset.y = el.dataset.y;
+          
+          activeActor.setAttribute(
+            'transform',
+            `translate(${el.dataset.x},${el.dataset.y}) rotate(0) scale(1)`,
+          );
+          
+          el.dataset.active = false;
+          el.dataset.current = false;
+          
+          otherTele.dataset.active = false;
+          otherTele.dataset.current = false;
+          
+          await sleep(10);
+          
+          activeActor.dataset.teleporting = false;
+        }
+      }
+    }, ANIM_RATE)
+  }
+});

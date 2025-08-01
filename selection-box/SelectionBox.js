@@ -60,6 +60,7 @@ export class TileSelector extends EventEmitter {
       e.stopPropagation();
       e.preventDefault();
     });
+    
     this.#handles.start.addEventListener('pointerdown', this.dragStartHandler);
     this.#handles.end.addEventListener('pointerdown', this.dragStartHandler);
     
@@ -101,11 +102,6 @@ export class TileSelector extends EventEmitter {
   }
   
   createSelectionHandle(handleLabel = 'start') {
-    // const startHandleGroup = document.createElementNS(SVG_NS, 'g');
-    // startHandleGroup.classList.add('selection-handle');
-    // startHandleGroup.dataset.handle = handleLabel
-    // startHandleGroup.id = `${handleLabel}-handle`;
-    
     const startHandle = document.createElementNS(SVG_NS, 'circle');
     startHandle.classList.add('selection-handle');
     startHandle.dataset.handle = handleLabel;
@@ -114,7 +110,6 @@ export class TileSelector extends EventEmitter {
     const startHandleBox = document.createElementNS(SVG_NS, 'rect');
     startHandleBox.classList.add('selection-handle-box');
     
-    // startHandleGroup.append(startHandle);
     return startHandle;
   }
   
