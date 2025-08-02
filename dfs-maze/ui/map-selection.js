@@ -15,32 +15,27 @@ const mapInput = document.querySelector('#map-input');
 const mapInput$ = fromEvent(mapInput, 'change')
 
 const saveButton = document.querySelector('#save-map')
-// const mapSelect = document.querySelector('#map-select')
 
 export const initMapControls = async (graph, svgCanvas, actor1) => {
-  const storedMaps = await loadMaps();
+  const storedMaps = (await loadMaps())
+  const awaitedMaps = storedMaps.map(([id, m]) => m);
+
   // await clearMaps()
-  // await storeMaps()
-  
+  // const newlyStoredMapIds = await storeMaps()
+  // console.warn('newlyStoredMapIds', newlyStoredMapIds);
+ 
   [...mapInput.options].forEach((e) => {
     e.remove();
   });
-  
-  storedMaps.sort((a, b) => a.name - b.name).forEach((m) => {
-    const opt = document.createElement('option');
-    opt.value = m.id;
-    opt.textContent = m.name;
-    
-    mapInput.add(opt)
-  });
-  
-  setTimeout(() => {
-    mapInput.dispatchEvent(new Event('change', {
-      target: mapInput,
-      mapId: [...mapInput.options].find(m => m.name == 'suk')
-    }))
-  }, 0);
-  
+  console.warn('storedMaps', storedMaps)
+  awaitedMaps
+    .forEach((m) => {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = m.name;
+      
+      mapInput.add(opt)
+    });
   
   saveButton.addEventListener('click', e => {
     e.preventDefault()
@@ -49,9 +44,7 @@ export const initMapControls = async (graph, svgCanvas, actor1) => {
     
     const mapSelection = e
     
-    console.warn('mapSelection', mapSelection)
-    
-    const graphOut = graph.toMap();
+  const graphOut = graph.toMap();
     
     copyTextToClipboard(graphOut)
     console.warn('graphOut\n\n', graphOut)
@@ -62,10 +55,9 @@ export const initMapControls = async (graph, svgCanvas, actor1) => {
     tap(async ({ target }) => {
       const sel = target.selectedOptions[0].value;
       
-      const maps = await loadMaps() 
-      
-      const selectedMap = maps[sel];
-      graph.fromMap(selectedMap.tiles);
+      const maps = await loadMaps()
+      const selectedMap = maps.find(([id, ...m]) => id == sel)[1]
+      graph.fromMap(selectedMap);
       
       svgCanvas.setViewBox({
         x: 0,

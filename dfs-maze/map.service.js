@@ -8,7 +8,6 @@ export const storeMap = async (mapToStore) => {
   const formatted = mapStorageFormatter(mapToStore);
   const id = await dbAdd('maps', formatted)
   
-  
   return id
 }
 
@@ -16,10 +15,7 @@ export const storeMaps = async (mapsToStore = maps) => {
   const ids = [];
   
   Object.values(mapsToStore).forEach(async (map, i) => {
-    const formatted = mapStorageFormatter(map);
-    const id = await dbAdd('maps', formatted)
-    
-    ids.push(id)
+    ids.push(await storeMap(map))
   });
   
   return ids

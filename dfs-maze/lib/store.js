@@ -109,6 +109,11 @@ export class TeleportNode extends GraphNode {
 
 
 export class Graph {
+  #name = 'Untitled';
+  #meta = {};
+  #width = null;;
+  #height = null;;
+  #nodeData = new Map(); // tileData
   #nodes = new Map();
   #edges = new Map();
   
@@ -119,6 +124,10 @@ export class Graph {
     
     window.graph = this
   }
+  
+  get name() { return this.#name; }
+  
+  set name(v) { this.#name = v }
   
   get nodes() { return [...this.#nodes.values()]; }
   
@@ -340,7 +349,7 @@ export class Graph {
     this.name = name
     this.width = width
     this.height = height
-
+    
     map.forEach((row, rowNumber) => {
       row.forEach((typeId, columnNumber) => {
         const tileType = TILE_TYPE_INDEX[typeId];
@@ -364,23 +373,45 @@ export class Graph {
         this.#nodes.set(node.address, node);
       });
     });
-    // console.warn('this.#nodes.entries()', [...this.#nodes.entries()])
-    // this.height = map.length
-    // this.width = map[0].length
   }
   
-  fromMap(map = []) {
+  fromMap(map = {}) {
     this.#nodes.clear()
+    let rows
     
-    const height = map.length;
-    const width = map[0].length;
+    console.warn('map', map)
     
-    map.forEach((row, rowNumber) => {
+    if (!Array.isArray(map)) {
+      const temprows = [...map.tiles];
+      
+      this.height = map.height;
+      this.width = map.width;
+      this.name = map.name;
+      this.#nodeData = new Map([...Object.entries(map.tileData)])
+      
+      rows = new Array(this.height).fill(null)
+        .map(_ => temprows.splice(0, this.width));
+    } else {
+      rows = map
+      this.height = rows.length
+      this.width = rows[0].length
+      
+    }
+    
+    rows.forEach((row, rowNumber) => {
       row.forEach((typeId, columnNumber) => {
         const tileType = TILE_TYPE_INDEX[typeId];
-        
+        let node
         if (tileType === 'teleport') {
-          const node = new TeleportNode({
+          node = new TeleportNode({
+            tileType: TILE_TYPE_INDEX[typeId],
+            x: columnNumber,
+            y: rowNumber,
+            selected: false,
+          });
+        }
+        else {
+          node = new GraphNode({
             tileType: TILE_TYPE_INDEX[typeId],
             x: columnNumber,
             y: rowNumber,
@@ -388,24 +419,19 @@ export class Graph {
           });
         }
         
-        const node = new GraphNode({
-          tileType: TILE_TYPE_INDEX[typeId],
-          x: columnNumber,
-          y: rowNumber,
-          selected: false,
-        });
+        if (this.#nodeData.has(node.address)) {
+          const data = this.#nodeData.get(node.address)
+          console.warn('data', data)
+          Object.assign(node, data)
+        }
         
         this.#nodes.set(node.address, node);
       });
     });
-    console.warn('this.#nodes.entries()', [...this.#nodes.entries()])
-    this.height = map.length
-    this.width = map[0].length
-  }
+      }
   
   toMap(formatAsCharMatrix = true) {
     const output = new Array(this.height).fill(null).map(_ => new Array(this.width).fill(null));
-    // const charMapOutput = new Array(this.height).fill(null).map(_ => new Array(this.width).fill(null));
     
     const tileTypes = TILE_TYPE_INDEX.reduce((acc, curr, i) => {
       return { ...acc, [curr]: i }
@@ -414,7 +440,6 @@ export class Graph {
     [...this.#nodes].forEach(([addressKey, node], i) => {
       const [x, y] = (addressKey.includes(',') ? addressKey.split(',').map(_ => +_) : addressKey.split('_')).map(_ => +_)
       output[y][x] = formatAsCharMatrix ? tileTypes[node.tileType] : node
-      // charMapOutput[y][x] = tileTypes[node.tileType]
     });
     
     const outputJSON = JSON.stringify(output)
