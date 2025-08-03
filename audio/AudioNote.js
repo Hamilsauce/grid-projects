@@ -44,7 +44,7 @@ export class AudioNote {
     osc.frequency.setValueAtTime(frequency, startTime);
     
     gain.gain.setValueAtTime(0, startTime);
-    gain.gain.linearRampToValueAtTime(velocity, startTime + 0.01); // quick fade-in
+    gain.gain.linearRampToValueAtTime(velocity, startTime + 0.02); // quick fade-in
     gain.gain.setValueAtTime(velocity, startTime + durationTime - 0.01);
     gain.gain.linearRampToValueAtTime(0.0, startTime + durationTime); // fade-out
     

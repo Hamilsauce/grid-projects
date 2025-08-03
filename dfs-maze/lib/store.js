@@ -9,6 +9,11 @@ export const TILE_TYPE_INDEX = [
   'teleport',
 ];
 
+const tileTypes = TILE_TYPE_INDEX.reduce((acc, curr, i) => {
+  return { ...acc, [curr]: i }
+}, {});
+
+
 const DIRECTIONS = new Map([
   ['up', { x: 0, y: -1 }],
   ['down', { x: 0, y: 1 }],
@@ -89,6 +94,10 @@ export class TeleportNode extends GraphNode {
   
   get linkedNodeAddress() { return this.#target ? [this.#target.x, this.#target.y].join('_') : null; }
   
+  get target() { return this.#target }
+  
+  set target(v) { this.#target = v }
+  
   linkToNode({ x, y }) {
     this.#target = { x, y };
   }
@@ -105,10 +114,8 @@ export class TeleportNode extends GraphNode {
   
 }
 
-
-
-
 export class Graph {
+  #id = null;
   #name = 'Untitled';
   #meta = {};
   #width = null;;
@@ -124,6 +131,8 @@ export class Graph {
     
     window.graph = this
   }
+  
+  get id() { return this.#id; }
   
   get name() { return this.#name; }
   
@@ -182,9 +191,15 @@ export class Graph {
   
   getNeighbor(node, dirName = '') {
     if (dirName === 'remote') {
-      const tele = this.findNode((n) => n !== node && n.tileType === 'teleport')
+      
+      const tele = this.getNodeAtPoint({
+        x: node.target.x,
+        y: node.target.y,
+      });
+      
       return tele
     }
+    
     const { x, y } = DIRECTIONS.get(dirName);
     
     const n = this.getNodeAtPoint({
@@ -204,7 +219,7 @@ export class Graph {
         return node && this.getNeighbor(node, name) ? map.set(name, this.getNeighbor(node, name)) : map;
       }, new Map());
     
-    if (node.tileType === 'teleport') {
+    if (node.tileType === 'teleport' && node.target) {
       neighborMap.set('remote', this.getNeighbor(node, 'remote'))
     }
     
@@ -218,8 +233,38 @@ export class Graph {
   getPath(node = this.startNode, stopNode) {
     this.resetPath();
     return this.bfsShortestPath(node, stopNode)
-    // return this.shortestPathDfs(node, stopNode)
   };
+  
+  bfsShortestPath(start, goal) {
+    const queue = [
+      [start]
+    ]; // queue of paths
+    const visited = new Set(); // to avoid revisiting nodes
+    
+    while (queue.length > 0) {
+      const path = queue.shift(); // FIFO
+      const node = path[path.length - 1];
+      
+      let unvisitedNeighbors
+      
+      if (node === goal) {
+        return path; // return full path when goal is found
+      }
+      
+      if (!visited.has(node)) {
+        visited.add(node);
+        
+        unvisitedNeighbors = this.getUnvisitedNeighbors(node);
+        
+        for (const [direction, neighbor] of unvisitedNeighbors || []) {
+          queue.push([...path, neighbor]); // enqueue a new path
+        }
+      }
+    }
+    
+    return null; // no path found
+  }
+  
   
   toLinkedList(lastNode) {
     let pointer = 0;
@@ -253,81 +298,7 @@ export class Graph {
     curr = path[pointer];
   };
   
-  bfsShortestPath(start, goal) {
-    const queue = [
-      [start]
-    ]; // queue of paths
-    const visited = new Set(); // to avoid revisiting nodes
-    
-    while (queue.length > 0) {
-      const path = queue.shift(); // FIFO
-      const node = path[path.length - 1];
-      
-      let unvisitedNeighbors
-      
-      if (node === goal) {
-        return path; // return full path when goal is found
-      }
-      
-      if (!visited.has(node)) {
-        visited.add(node);
-        
-        unvisitedNeighbors = this.getUnvisitedNeighbors(node);
-        
-        for (const [direction, neighbor] of unvisitedNeighbors || []) {
-          queue.push([...path, neighbor]); // enqueue a new path
-        }
-      }
-    }
-    
-    return null; // no path found
-  }
   
-  shortestPathDfs(node, stopNode) {
-    //node = this.startNode, stopNode = this.goalNode) {
-    // node.isPathNode = true;
-    node.isVisited = true;
-    
-    if (node === stopNode) {
-      return node;
-    }
-    
-    
-    let unvisitedNeighbors = this.getUnvisitedNeighbors(node);
-    
-    if (unvisitedNeighbors.length == 0 && node.previous) {
-      node.isPathNode = false;
-      node.isVisited = true;
-      node = node.previous;
-      
-      unvisitedNeighbors = this.getUnvisitedNeighbors(node);
-      
-      while (node && unvisitedNeighbors.length === 0) {
-        node.isPathNode = false;
-        node.isVisited = true;
-        node = node.previous;
-        
-        unvisitedNeighbors = this.getUnvisitedNeighbors(node);
-      }
-      
-      return this.shortestPathDfs(node, stopNode);
-    }
-    
-    else {
-      for (let [direction, neighbor] of unvisitedNeighbors) {
-        neighbor.previous = node;
-        
-        if (unvisitedNeighbors.length > 0) {
-          return this.shortestPathDfs(neighbor, stopNode);
-        }
-        
-        else {
-          return node
-        }
-      }
-    }
-    return node; /* If no path, return null */
-  }
   
   resetPath() {
     this.nodes.forEach((n, i) => {
@@ -379,15 +350,17 @@ export class Graph {
     this.#nodes.clear()
     let rows
     
-    console.warn('map', map)
     
     if (!Array.isArray(map)) {
+      
       const temprows = [...map.tiles];
       
       this.height = map.height;
       this.width = map.width;
       this.name = map.name;
-      this.#nodeData = new Map([...Object.entries(map.tileData)])
+      this.#id = map.id;
+      this.#meta = map.meta;
+      this.#nodeData = new Map(Object.entries(map.tileData))
       
       rows = new Array(this.height).fill(null)
         .map(_ => temprows.splice(0, this.width));
@@ -421,21 +394,48 @@ export class Graph {
         
         if (this.#nodeData.has(node.address)) {
           const data = this.#nodeData.get(node.address)
-          console.warn('data', data)
           Object.assign(node, data)
+          
         }
         
         this.#nodes.set(node.address, node);
       });
     });
+  }
+  
+  toStorageFormat() {
+    const output = [...this.#nodes.values()].reduce((out, n, i) => {
+      let data = {};
+      out.tiles.push(tileTypes[n.tileType])
+      
+      if (!['barrier', 'empty'].includes(n.tileType)) {
+        data.tileType = n.tileType;
+        
+        if (n.tileType === 'teleport') data.target = n.target;
+        
+        out.tileData[n.address] = data;
       }
+      
+      return out
+    }, {
+      width: this.width,
+      height: this.height,
+      tiles: [],
+      tileData: {},
+      meta: this.#meta,
+      name: this.#name,
+      id: this.#id,
+    });
+    
+    return output;
+  }
   
   toMap(formatAsCharMatrix = true) {
     const output = new Array(this.height).fill(null).map(_ => new Array(this.width).fill(null));
     
-    const tileTypes = TILE_TYPE_INDEX.reduce((acc, curr, i) => {
-      return { ...acc, [curr]: i }
-    }, {});
+    // const tileTypes = TILE_TYPE_INDEX.reduce((acc, curr, i) => {
+    //   return { ...acc, [curr]: i }
+    // }, {});
     
     [...this.#nodes].forEach(([addressKey, node], i) => {
       const [x, y] = (addressKey.includes(',') ? addressKey.split(',').map(_ => +_) : addressKey.split('_')).map(_ => +_)
@@ -455,4 +455,51 @@ export class Graph {
     
     return outputJSON;
   }
+  
+  shortestPathDfs(node, stopNode) {
+    //node = this.startNode, stopNode = this.goalNode) {
+    // node.isPathNode = true;
+    node.isVisited = true;
+    
+    if (node === stopNode) {
+      return node;
+    }
+    
+    
+    let unvisitedNeighbors = this.getUnvisitedNeighbors(node);
+    
+    if (unvisitedNeighbors.length == 0 && node.previous) {
+      node.isPathNode = false;
+      node.isVisited = true;
+      node = node.previous;
+      
+      unvisitedNeighbors = this.getUnvisitedNeighbors(node);
+      
+      while (node && unvisitedNeighbors.length === 0) {
+        node.isPathNode = false;
+        node.isVisited = true;
+        node = node.previous;
+        
+        unvisitedNeighbors = this.getUnvisitedNeighbors(node);
+      }
+      
+      return this.shortestPathDfs(node, stopNode);
+    }
+    
+    else {
+      for (let [direction, neighbor] of unvisitedNeighbors) {
+        neighbor.previous = node;
+        
+        if (unvisitedNeighbors.length > 0) {
+          return this.shortestPathDfs(neighbor, stopNode);
+        }
+        
+        else {
+          return node
+        }
+      }
+    }
+    return node; /* If no path, return null */
+  }
+  
 }

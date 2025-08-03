@@ -36,26 +36,26 @@ export const SPIRAL1 = {
 }
 
 export const BABY_MAP_6X6 = {
+  id: '',
   name: 'Baby Map 4x6',
   meta: {
     author: 'ham',
-    created: Date.now(),
+    created: '07/31/2025',
     updated: Date.now(),
   },
   tileData: {},
-  tiles: [
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-    
-  ],
+  width: 4,
+  height: 6,
+  tiles: [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 }
 
 export const BLANK_MAP_9X15_1 = {
   name: 'Blank Map 9x15',
+  meta: {
+    author: 'ham',
+    created: '07/31/2025',
+    updated: Date.now(),
+  },
   tileData: {},
   tiles: [
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -79,6 +79,11 @@ export const BLANK_MAP_9X15_1 = {
 export const MAP_9X15_1 = {
   name: 'Maze Map 9x15 1',
   tileData: {},
+  meta: {
+    author: 'ham',
+    created: '07/31/2025',
+    updated: Date.now(),
+  },
   tiles: [
     [1, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 2, 1, 0, 0, 0, 0, 0, 1],
@@ -100,6 +105,11 @@ export const MAP_9X15_1 = {
 
 export const BIG_ASS_MAP = {
   name: 'Big Ass Map',
+  meta: {
+    author: 'ham',
+    created: '07/31/2025',
+    updated: Date.now(),
+  },
   tileData: {
     '0_2': { type: 'teleport', target: { x: 12, y: 0 } },
     '12_0': { type: 'teleport', target: { x: 0, y: 2 } },
@@ -132,6 +142,11 @@ export const BIG_ASS_MAP = {
 
 export const suk = {
   name: 'suk',
+  meta: {
+    author: 'ham',
+    created: '07/31/2025',
+    updated: Date.now(),
+  },
   tileData: {
     '0_2': { type: 'teleport', target: { x: 12, y: 0 } },
     '12_0': { type: 'teleport', target: { x: 0, y: 2 } },
@@ -179,22 +194,24 @@ const isObjectEmpty = (obj) => {
   return Object.keys(obj).length === 0
 };
 
-export const mapStorageFormatter = ({ name, tiles, tileData }) => {
-  const height = tiles.length;
-  const width = tiles[0].length;
+export const mapStorageFormatter = ({ name, tiles, tileData, meta, width, height }) => {
+  const isGrid = Array.isArray(tiles[0])
+  height = height ?? tiles.length;
+  width = width ?? tiles[0].length;
   
   console.warn('isObjectEmpty(tileData)', isObjectEmpty(tileData))
   
-  const flat = tiles.reduce((flattened, row, i) => {
+  
+  tiles = !isGrid ? tiles : tiles.reduce((flattened, row, i) => {
     return [...flattened, ...row]
-    
   }, []);
   
   return {
     name,
     tileData,
-    tiles: flat,
+    tiles,
     width,
-    height
+    height,
+    meta,
   }
 };

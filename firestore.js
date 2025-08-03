@@ -67,16 +67,24 @@ export const dbGetAll = async (collectionPath, options = {}) => {
   }));
 };
 
+export const getFieldOnly = async (coll, fieldName) => {
+  const q = query(collection(db, coll));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    [fieldName]: doc.get(fieldName),
+  }));
+};
 // export const dbQuery = async (collectionPath, conditions = [], selectedFields = null) => {
 //   let q = collection(db, collectionPath);
 //   const constraints = conditions.map(([field, op, value]) => where(field, op, value));
-  
+
 //   if (selectedFields) constraints.push(select(...selectedFields));
-  
+
 //   q = query(q, ...constraints);
-  
+
 //   const snap = await getDocs(q);
-  
+
 //   return snap.docs.map(doc => ({
 //     id: doc.id,
 //     ...doc.data()

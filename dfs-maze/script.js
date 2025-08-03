@@ -28,22 +28,10 @@ const useTemplate = (templateName, options = {}) => {
 
 
 const audioNote1 = (new AudioNote(audioEngine))
-// .at(audioEngine.currentTime + 0.2)
-// .frequencyHz(440)
-// .duration(0.5)
-// .velocity(0.7).play()
 
-// setInterval(() => {
-//   audioNote1
-//     .at(audioEngine.currentTime + 0.2)
-//     .frequencyHz(440)
-//     .duration(0.5)
-//     .velocity(0.7).play()
+const graph = new Graph();
+graph.fromMap(maps.BABY_MAP_6X6)
 
-// }, 500)
-
-
-const graph = new Graph(maps.BIG_ASS_MAP.tiles);
 const canvasEl = document.querySelector('#canvas');
 const svgCanvas = new SVGCanvas(canvasEl)
 
@@ -325,23 +313,24 @@ svgCanvas.addEventListener('click', async ({ detail }) => {
       else {
         
         const freqX = ((curr.x + 2) * 2) // < 120 ? 120 : ((curr.x + 1) * 2)
-        const freqY = ((curr.y + 2) * 2) // < 120 ? 120 : ((curr.y + 1) * 1.5)
+        const freqY = ((curr.y + 2) * 1.5) // < 120 ? 120 : ((curr.y + 1) * 1.5)
         
         let freq = ((freqX) * (freqY)) * 1.5
         freq = freq < 250 ? freq + 200 : freq
         freq = freq > 1600 ? 1200 - freq : freq
+        freq = curr.tileType === 'teleport' ? freq + 250 : freq
         
-        let vel = (0.7 - (pointer / bfsPath.length))
-        vel = vel >= 0.7 ? 0.7 : vel
         
-        vel = vel <= 0.15 ? 0.15 : vel
+        let vel = (0.5 - (pointer / bfsPath.length))
+        vel = vel >= 0.5 ? 0.5 : vel
+        
+        vel = vel <= 0.075 ? 0.075 : vel
         const dur = 2 / bfsPath.length
         const startMod = ((pointer || 1) * 0.01)
         audioNote1
-          // .at(audioEngine.currentTime + ((pointer/bfsPath.length) * 0.05))
-          .at(audioEngine.currentTime + startMod)
+          .at(audioEngine.currentTime)
           .frequencyHz(freq)
-          .duration(0.15)
+          .duration(0.1)
           .velocity(vel).play()
         
         const el = svgCanvas.querySelector(`.tile[data-x="${curr.x}"][data-y="${curr.y}"]`);
@@ -378,11 +367,6 @@ svgCanvas.addEventListener('click', async ({ detail }) => {
         if (el === targetNodeEl) {
           el.dataset.active = true;
           el.dataset.current = true;
-          // audioNote1
-          //   .at(audioEngine.currentTime + 0.2)
-          //   .frequencyHz(900)
-          //   .duration(1)
-          //   .velocity(0.7).play()
           
           return
         }
@@ -410,15 +394,6 @@ svgCanvas.addEventListener('click', async ({ detail }) => {
             'transform',
             `translate(${el.dataset.x},${el.dataset.y}) rotate(0) scale(1)`,
           );
-          
-          
-          
-          // audioNote1
-          //   .at(audioEngine.currentTime + 0.2)
-          //   .frequencyHz(+el.dataset.y * 50)
-          //   .duration(0.2)
-          //   .velocity(0.7).play()
-          
           
           el.dataset.active = false;
           el.dataset.current = false;
@@ -469,6 +444,10 @@ contextMenu.addEventListener('click', e => {
     })
     
     nodeModel.setType(selectedTileTypeName);
+    
+    if (selectedTileTypeName === 'teleport') {
+      nodeModel.target = { x: 1, y: 1 }
+    }
     
     tile.dataset.tileType = selectedTileTypeName;
   });

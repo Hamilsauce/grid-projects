@@ -1,5 +1,5 @@
 import { MAP_9X15_1, BLANK_MAP_9X15_1, maps, mapStorageFormatter } from '../../dfs-maze/maps.js';
-import { storeMaps, loadMaps, clearMaps } from '../../dfs-maze/map.service.js';
+import { storeMaps, storeMap, updateMap, loadMap, loadMaps, clearMaps, loadMapNames } from '../../dfs-maze/map.service.js';
 import { copyTextToClipboard } from '../../dfs-maze/lib/utils.js';
 
 const { forkJoin, Observable, iif, BehaviorSubject, AsyncSubject, Subject, interval, of, fromEvent, merge, empty, delay, from } = rxjs;
@@ -17,37 +17,48 @@ const mapInput$ = fromEvent(mapInput, 'change')
 const saveButton = document.querySelector('#save-map')
 
 export const initMapControls = async (graph, svgCanvas, actor1) => {
-  const storedMaps = (await loadMaps())
-  const awaitedMaps = storedMaps.map(([id, m]) => m);
-
-  // await clearMaps()
-  // const newlyStoredMapIds = await storeMaps()
+  // const storedMaps = (await loadMaps())
+  const mapNames = await loadMapNames();
+  
+  // await clearMaps();
+  // const newlyStoredMapIds = await Promise.all(storeMaps())
   // console.warn('newlyStoredMapIds', newlyStoredMapIds);
- 
+  
   [...mapInput.options].forEach((e) => {
     e.remove();
   });
-  console.warn('storedMaps', storedMaps)
-  awaitedMaps
-    .forEach((m) => {
-      const opt = document.createElement('option');
-      opt.value = m.id;
-      opt.textContent = m.name;
-      
-      mapInput.add(opt)
-    });
+  const blankOpt = { id: null, name: '' };
   
-  saveButton.addEventListener('click', e => {
+  [blankOpt, ...mapNames].forEach((m) => {
+    const opt = document.createElement('option');
+    opt.value = m.id;
+    opt.textContent = m.name;
+    
+    mapInput.add(opt)
+  });
+  
+  saveButton.addEventListener('click', async (e) => {
     e.preventDefault()
     e.stopPropagation()
     e.stopImmediatePropagation()
     
     const mapSelection = e
+    let mapId
+    const graphOut = graph.toStorageFormat();
     
-  const graphOut = graph.toMap();
+    if (!!graphOut.id) {
+      mapId = await updateMap(graphOut)
+    }
+    
+    else {
+      delete graphOut.id
+      
+      mapId = await storeMap(graphOut)
+    }
+    console.warn('STORED MAP ID', mapId)
     
     copyTextToClipboard(graphOut)
-    console.warn('graphOut\n\n', graphOut)
+    console.warn('toStorageFormat graphOut\n\n', graphOut)
   });
   
   
@@ -55,8 +66,8 @@ export const initMapControls = async (graph, svgCanvas, actor1) => {
     tap(async ({ target }) => {
       const sel = target.selectedOptions[0].value;
       
-      const maps = await loadMaps()
-      const selectedMap = maps.find(([id, ...m]) => id == sel)[1]
+      const selectedMap = await loadMap(sel)
+      
       graph.fromMap(selectedMap);
       
       svgCanvas.setViewBox({

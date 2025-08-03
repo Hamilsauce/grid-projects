@@ -1,8 +1,15 @@
-import { dbAdd, dbGetAll, dbDelete } from '../firestore.js';
+import { dbAdd, dbGet, dbGetAll, dbUpdate, getFieldOnly, dbDelete } from '../firestore.js';
 import { maps, mapStorageFormatter } from './maps.js';
 
 
 const cache = new Map();
+
+export const updateMap = async (mapToStore) => {
+  // const formatted = 
+  const id = await dbUpdate('maps', mapToStore.id, mapToStore)
+  
+  return id
+}
 
 export const storeMap = async (mapToStore) => {
   const formatted = mapStorageFormatter(mapToStore);
@@ -12,13 +19,28 @@ export const storeMap = async (mapToStore) => {
 }
 
 export const storeMaps = async (mapsToStore = maps) => {
-  const ids = [];
-  
-  Object.values(mapsToStore).forEach(async (map, i) => {
-    ids.push(await storeMap(map))
+  const ids = Object.values(mapsToStore).map(async (map, i) => {
+    return await storeMap(map)
   });
   
   return ids
+}
+
+
+
+
+export const loadMapNames = async () => {
+  const fetched = await getFieldOnly('maps', 'name');
+  console.warn('loadMapNames', fetched)
+  
+  return fetched;
+}
+
+export const loadMap = async (id) => {
+  const fetched = await dbGet('maps', id);
+  
+  fetched.id = id
+  return fetched;
 }
 
 export const loadMaps = async (asMap = false) => {
@@ -34,9 +56,12 @@ export const loadMaps = async (asMap = false) => {
 }
 
 export const clearMaps = async () => {
-  const savedMaps = cache.size > 0 ? [...cache.entries()] : await dbGetAll('maps');
+  const savedMaps = cache.size > 0 ? [...cache.entries()] :
+    await dbGetAll('maps');
   
-  savedMaps.map(([id, m]) => ({ ...m, id }))
+  console.warn('savedMaps', savedMaps)
+  
+  savedMaps //.map((m) => ({ ...m }))
     .forEach(async ({ id, ...m }, i) => {
       await dbDelete('maps', id)
       cache.delete(id)
