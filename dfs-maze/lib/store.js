@@ -36,6 +36,8 @@ export class GraphNode {
   
   get tileType() { return this.#tileType }
   
+  set tileType(v) { this.#tileType = v }
+  
   get isEmpty() { return ['empty'].includes(this.#tileType) }
   
   get isTraversable() { return !['barrier'].includes(this.#tileType) }
@@ -46,7 +48,11 @@ export class GraphNode {
   
   get y() { return this.#point.y }
   
-  setType(type) { this.#tileType = type }
+  setType(type) {
+    console.warn('SET NODE TYPE. OLD: ', this.#tileType)
+    console.warn('SET NODE TYPE. NEW: ', type)
+    this.#tileType = type
+  }
   
   toJSON() {
     return {
@@ -82,7 +88,7 @@ export class Neighbor {
 }
 
 export class TeleportNode extends GraphNode {
-  #target = null;
+  #target = { x: 0, y: 0 };
   #linkedNodeAddress = null;
   
   constructor({ target, ...nodeState }) {
@@ -411,7 +417,7 @@ export class Graph {
       if (!['barrier', 'empty'].includes(n.tileType)) {
         data.tileType = n.tileType;
         
-        if (n.tileType === 'teleport') data.target = n.target;
+        if (n.tileType === 'teleport' && n.target) data.target = n.target;
         
         out.tileData[n.address] = data;
       }

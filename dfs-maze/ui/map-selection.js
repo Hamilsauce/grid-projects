@@ -67,8 +67,10 @@ export const initMapControls = async (graph, svgCanvas, actor1) => {
       const sel = target.selectedOptions[0].value;
       
       const selectedMap = await loadMap(sel)
-      
+   console.warn('selectedMap', selectedMap)   
       graph.fromMap(selectedMap);
+      
+      console.warn('graph.toStorageFormat()', graph.toStorageFormat())
       
       svgCanvas.setViewBox({
         x: 0,
