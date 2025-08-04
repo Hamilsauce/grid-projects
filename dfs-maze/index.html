@@ -32,12 +32,15 @@
         <defs>
           <g data-template="context-menu" id="context-menu" data-show="false" transform="translate(0,0) rotate(0) scale(0.05)">
             <foreignObject x="0" y="0" width="60" height="120" transform="translate(0,0) rotate(0) scale(1)">
-              <ul class="context-menu-list">
-                <li data-value="barrier">barrier</li>
-                <li data-value="empty">empty</li>
-                <li data-value="start">start</li>
-                <li data-value="teleport">teleport</li>
-              </ul>
+              <div class="context-menu-container">
+                <ul class="context-menu-list primary">
+                  <li data-value="barrier">barrier</li>
+                  <li data-value="empty">empty</li>
+                  <li data-value="start">start</li>
+                  <li data-value="teleport">teleport</li>
+                </ul>
+                <ul class="context-menu-list secondary"></ul>
+              </div>
             </foreignObject>
           </g>
           <g data-template="actor" id="" data-x="0" data-y="0" data-teleporting="false" class="actor" transform="translate(0,0) rotate(0) scale(1)">

@@ -419,6 +419,9 @@ contextMenu.addEventListener('click', e => {
   e.stopImmediatePropagation()
   
   const targ = e.target.closest('li');
+  
+  const selectedTileTypeName = targ.dataset.value;
+  
   const selectedTile = svgCanvas.layers.tile.querySelector('.tile[data-selected="true"]');
   const selectedTiles = selectedRange
   
@@ -429,7 +432,6 @@ contextMenu.addEventListener('click', e => {
     y: +selectedTile.dataset.y,
   })
   
-  const selectedTileTypeName = targ.dataset.value;
   
   node.setType(selectedTileTypeName);
   
@@ -465,7 +467,32 @@ svgCanvas.layers.tile.addEventListener('contextmenu', e => {
   e.stopImmediatePropagation()
   
   const targ = e.target.closest('.tile');
-  
+  const tileType = targ.dataset.tileType
+  // const listEl = targ.parentElement
+  const listEl = contextMenu.querySelector('.context-menu-list.secondary')
+  if (tileType === 'teleport') {
+    const htmlListContainer = contextMenu.querySelector('.context-menu-container')
+    const svgListContainer = contextMenu.firstElementChild
+    
+    const linkToItem = document.createElement('li');
+    
+    linkToItem.dataset.value = 'linkto'
+    linkToItem.textContent = 'Link To...'
+    linkToItem.classList.add('special-menu-item');
+    listEl.append(linkToItem)
+    
+    const htmlHeight = getComputedStyle(htmlListContainer).height
+    console.warn('htmlHeight', htmlHeight)
+    
+    // svgListContainer.setAttribute('height', htmlHeight) 
+  }
+  else {
+    const specItems = [...listEl.children]
+    specItems.forEach((el, i) => {
+      el.remove()
+      
+    });
+  }
   targ.dataset.selected = true
   selectionBox.insertAt(targ);
   contextMenu.parentElement.append(contextMenu)
