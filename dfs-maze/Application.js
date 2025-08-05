@@ -3,5 +3,8 @@ const { template, utils } = ham;
 
 export class Application {
   #ui 
+  #svgCanvas 
+  #audioEngine 
+  
   constructor() {}
 }

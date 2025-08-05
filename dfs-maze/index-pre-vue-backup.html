@@ -17,8 +17,7 @@
 </head>
 
 <body>
-  <div id="app-host"></div>
-  <!-- <div id="app">
+  <div id="app">
     <header id="app-header">
       <div id="app-header-left"></div>
       <div id="app-header-center">
@@ -75,7 +74,7 @@
         <button id="save-map" class="file-button" type="submit">Save</button>
       </div>
     </footer>
-  </div> -->
+  </div>
   
   <script type="importmap">
     {
@@ -91,17 +90,9 @@
   <script type="text/javascript" charset="utf-8">
     const SVG_NS = 'http://www.w3.org/2000/svg';
   </script>
-  <script src="./main.js" type="module"></script>
   <script src="./script.js" type="module"></script>
+  <script src="./main.js" type="module"></script>
   <!-- <script src="../shortest-path-gpt.js" type="module"></script> -->
-  
-  <template data-component="app">
-    <div id="app">
-      <app-header></app-header>
-      <app-body></app-body>
-      <app-footer></app-footer>
-    </div>
-  </template>
   
   <template data-component="app-header">
     <header id="app-header">
@@ -164,7 +155,66 @@
       </div>
     </footer>
   </template>
-  
+  <template data-component="app">
+    <div id="app">
+      <header id="app-header">
+        <div id="app-header-left"></div>
+        <div id="app-header-center">
+          <h1>Shortest Path King</h1>
+        </div>
+        <div id="app-header-right">
+          <div id="app-state-display"></div>
+        </div>
+      </header>
+      <section id="app-body">
+        <svg id="canvas" style="background:#2B35A5;" width="412" height="681" viewBox="-0 -0 9 15" preserveAspectRatio="xMidYMin meet" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <g data-template="context-menu" id="context-menu" data-show="false" transform="translate(0,0) rotate(0) scale(0.05)">
+              <foreignObject x="0" y="0" width="60" height="120" transform="translate(0,0) rotate(0) scale(1)">
+                <div class="context-menu-container">
+                  <ul class="context-menu-list primary">
+                    <li data-value="barrier">barrier</li>
+                    <li data-value="empty">empty</li>
+                    <li data-value="start">start</li>
+                    <li data-value="teleport">teleport</li>
+                  </ul>
+                  <ul class="context-menu-list secondary"></ul>
+                </div>
+              </foreignObject>
+            </g>
+            <g data-template="actor" id="" data-x="0" data-y="0" data-teleporting="false" class="actor" transform="translate(0,0) rotate(0) scale(1)">
+              <circle cx="0.5" cy="0.5" r="0.4" transform="translate(0,0) rotate(0) scale(1)" />
+            </g>
+          </defs>
+          <g id="scene" transform="translate(0,0) rotate(0) scale(1)">
+            <g id="surface-layer" transform="translate(-0,-0) rotate(0) scale(1)">
+              <rect id="surface" x="0" y="0" rx="0" ry="0" width="10" height="15"></rect>
+            </g>
+            
+            <g id="tile-layer" transform="translate(-0,-0) rotate(0) scale(1)"></g>
+            
+            <g id="object-layer" transform="translate(0.5,0.5) rotate(0) scale(1)"></g>
+          </g>
+        </svg>
+      </section>
+      
+      <footer id="app-footer">
+        <div class="container">
+          <label for="map-input">Pick Map</label>
+          <select name="map-input" id="map-input">
+            <option value="MAP_9X15_1">MAP_9X15_1</option>
+            <option value="BLANK_MAP_9X15_1">BLANK_MAP_9X15_1</option>
+            <option value="suk">suk</option>
+            <option value="BIG_ASS_MAP">BIG_ASS_MAP</option>
+          </select>
+        </div>
+        <div class="container">
+          <button class="file-button" type="submit">Load</button>
+          <button id="save-map" class="file-button" type="submit">Save</button>
+        </div>
+      </footer>
+    </div>
+  </template>
 </body>
 
 </html>

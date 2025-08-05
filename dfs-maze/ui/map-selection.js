@@ -5,6 +5,8 @@ import { copyTextToClipboard } from '../../dfs-maze/lib/utils.js';
 const { forkJoin, Observable, iif, BehaviorSubject, AsyncSubject, Subject, interval, of, fromEvent, merge, empty, delay, from } = rxjs;
 const { flatMap, reduce, groupBy, toArray, mergeMap, switchMap, scan, map, tap, filter } = rxjs.operators;
 
+import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
+const { sleep, template, utils, download, TwoWayMap } = ham;
 
 const app = document.querySelector('#app');
 const appBody = document.querySelector('#app-body')
@@ -55,7 +57,6 @@ export const initMapControls = async (graph, svgCanvas, actor1) => {
       
       mapId = await storeMap(graphOut)
     }
-    console.warn('STORED MAP ID', mapId)
     
     copyTextToClipboard(graphOut)
     console.warn('toStorageFormat graphOut\n\n', graphOut)
@@ -67,10 +68,7 @@ export const initMapControls = async (graph, svgCanvas, actor1) => {
       const sel = target.selectedOptions[0].value;
       
       const selectedMap = await loadMap(sel)
-   console.warn('selectedMap', selectedMap)   
       graph.fromMap(selectedMap);
-      
-      console.warn('graph.toStorageFormat()', graph.toStorageFormat())
       
       svgCanvas.setViewBox({
         x: 0,
