@@ -6,7 +6,6 @@ const { addPanAction, template, utils, download, TwoWayMap } = ham;
 const { forkJoin, Observable, iif, BehaviorSubject, AsyncSubject, Subject, interval, of, fromEvent, merge, empty, delay, from } = rxjs;
 const { flatMap, reduce, groupBy, toArray, mergeMap, switchMap, scan, map, tap, filter } = rxjs.operators;
 
-
 export class SVGCanvas extends EventTarget {
   #self = null;
   #isContextMenuActive = false;
@@ -16,36 +15,33 @@ export class SVGCanvas extends EventTarget {
     
     this.#self = svg;
     
-    this.surfaceLayer = this.dom.querySelector('#surface-layer')
+    this.surfaceLayer = this.dom.querySelector('#surface-layer');
     
-    this.surface = this.surfaceLayer.querySelector('#surface')
+    this.surface = this.surfaceLayer.querySelector('#surface');
     
     this.layers = {
       surface: this.dom.querySelector('#surface-layer'),
       tile: this.dom.querySelector('#tile-layer'),
       object: this.dom.querySelector('#object-layer'),
-    }
-    
-    
+    };
     
     this.layers.tile.addEventListener('contextmenu', (e) => {
       this.#isContextMenuActive = true;
-      console.warn('this.isContextMenuActive ', this.isContextMenuActive)
+      console.warn('this.isContextMenuActive ', this.isContextMenuActive);
       
-      this.dom.addEventListener('click', this.toggleScroll)
-      document.querySelector('#context-menu').addEventListener('click', this.toggleScroll)
-      
-    })
+      this.dom.addEventListener('click', this.toggleScroll);
+      document.querySelector('#context-menu').addEventListener('click', this.toggleScroll);
+    });
     
-    this.dom.addEventListener('blurContextMenu', (e) => {
+    this.addEventListener('blurContextMenu', (e) => {
       this.#isContextMenuActive = false;
-      console.warn('PPOP.#blurContextMenu', this.#isContextMenuActive)
-    })
+      console.warn('PPOP.#blurContextMenu', this.#isContextMenuActive);
+    });
     
     this.panAction$ = addPanAction(this.dom, (vb) => {
-      if (this.isContextMenuActive) {
-        return
-      }
+      // if (this.isContextMenuActive) {
+      //   return
+      // }
       this.panViewport(vb)
     })
     
@@ -77,7 +73,7 @@ export class SVGCanvas extends EventTarget {
         tap((event) => this.dispatchEvent(event)),
       );
     
-    this.toggleScroll = this.#toggleScroll.bind(this)
+    this.toggleScroll = this.#toggleScroll.bind(this);
     this.clickDOMSubscription = this.eventEmits$.subscribe();
   }
   
@@ -96,20 +92,19 @@ export class SVGCanvas extends EventTarget {
   domPoint(x, y) {
     return new DOMPoint(x, y).matrixTransform(
       this.dom.getScreenCTM().inverse()
-    )
+    );
   }
   
   
   #toggleScroll(x, y) {
-    this.#isContextMenuActive = !this.#isContextMenuActive
+    this.#isContextMenuActive = !this.#isContextMenuActive;
     
     if (this.isContextMenuActive) {
-      this.dom.removeEventListener('contextmenu', this.toggleScroll)
-      this.dom.addEventListener('click', this.toggleScroll)
+      this.dom.removeEventListener('contextmenu', this.toggleScroll);
+      this.dom.addEventListener('click', this.toggleScroll);
     } else {
-      this.dom.addEventListener('contextmenu', this.toggleScroll)
-      this.dom.removeEventListener('click', this.toggleScroll)
-      
+      this.dom.addEventListener('contextmenu', this.toggleScroll);
+      this.dom.removeEventListener('click', this.toggleScroll);
     }
   }
   
@@ -150,7 +145,7 @@ export class SVGCanvas extends EventTarget {
     g.append(r);
     
     if (textContent) {
-      const t = this.createText({ textContent })
+      const t = this.createText({ textContent });
       g.append(t);
     }
     
@@ -191,7 +186,6 @@ export class SVGCanvas extends EventTarget {
   }
   
   panViewport({ x, y }) {
-    // console.warn('this.viewBox', this.viewBox)
     Object.assign(this.viewBox, { x, y });
   }
   
@@ -199,11 +193,9 @@ export class SVGCanvas extends EventTarget {
     Object.assign(this.viewBox, { x, y, width, height, });
     
     setTimeout(() => {
-    const tileBB = this.layers.tile.getBBox()
-    console.warn('tileBB', tileBB)
-    this.surface.setAttribute('transform', `translate(0,0) rotate(0) scale(${tileBB.width/10},${tileBB.height/15})`)
-    // this.surface.setAttribute('height', this.scene.getAttribute('height'))
-    }, 0)
+      const tileBB = this.layers.tile.getBBox()
+      this.surface.setAttribute('transform', `translate(0,0) rotate(0) scale(${tileBB.width/10},${tileBB.height/15})`);
+    }, 0);
     
     return this;
   }

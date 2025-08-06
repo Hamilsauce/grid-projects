@@ -174,6 +174,8 @@ export class TileSelector extends EventEmitter {
       this.setEndPoint({ x: x + this.#unitSize, y: y + this.#unitSize });
     }
     
+    // this.emitRange()
+    
     return this;
   }
   
@@ -227,6 +229,8 @@ export class TileSelector extends EventEmitter {
   }
   
   onDragHandle(e) {
+    e.stopPropagation();
+    
     if (!this.#dragTargetHandle) return;
     
     const handle = this.#dragTargetHandle;
@@ -239,7 +243,6 @@ export class TileSelector extends EventEmitter {
       console.warn('out of range', pt.x, pt.y)
       return
     }
-    
     
     if (
       handle.dataset.handle === 'start' &&
@@ -270,13 +273,11 @@ export class TileSelector extends EventEmitter {
     this.#dragTargetHandle = null;
     
     const pt = this.domPoint(e.clientX, e.clientY);
-  
     
     if (pt.x < 0 || pt.y < 0) {
       console.warn('out of range', pt.x, pt.y)
       return
     }
-    
     
     this.emitRange();
   }

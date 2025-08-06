@@ -38,25 +38,24 @@ body {
   filter: drop-shadow(0 3px 6px #2A2A2AC2);
 }
 
-/* .contex/t-menu-container {
+.context-menu-container {
   display: flex;
   flex-direction: column;
-  justify-content: 
-  align-items: center;
+  /* justify-content:  */
+  /* align-items: center; */
   gap: 2px;
-  height: 100%;
-
-} */
+  /* height: 100%; */
+}
 
 #context-menu .context-menu-list {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
-  align-items: center;
+  /* align-items: center; */
   gap: 1px;
   width: 100%;
-  padding: 2px;
+  padding: 0px;
   height: 100%;
   background: #E9E9E9;
   color: #494949;
@@ -78,11 +77,17 @@ body {
   background: #FFFFFF;
   color: #494949;
   font-size: 12px;
-}
-.context-menu-list.secondary li {
-  background: #E4E4E4;
+  white-space: nowrap;
 }
 
-.special-menu-item {
-  background: #DBDBDB;
+.context-menu-list.secondary li {
+  /* background: #E4E4E4; */
+  /* background: #D0EBAC; */
+
+}
+
+
+.edge-line > line {
+  stroke: #0006FF;
+  stroke-width: 0.1;
 }
