@@ -1,2 +1,0 @@
-const audioEngine = new AudioContext();
-

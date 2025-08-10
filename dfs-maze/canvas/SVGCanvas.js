@@ -1,5 +1,5 @@
 import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
-import { createCustomEvent } from './create-event.js';
+import { createCustomEvent } from '../../dfs-maze/lib/create-event.js';
 
 const { addPanAction, template, utils, download, TwoWayMap } = ham;
 

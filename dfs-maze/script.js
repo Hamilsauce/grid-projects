@@ -1,16 +1,16 @@
 import { Graph, TILE_TYPE_INDEX } from './lib/store.js';
-import { SVGCanvas } from './lib/SVGCanvas.js';
+import { SVGCanvas } from '../dfs-maze/canvas/SVGCanvas.js';
 import { maps } from './maps.js';
 import { copyTextToClipboard } from '../dfs-maze/lib/utils.js';
 import { getTileSelector } from '../selection-box/SelectionBox.js';
 import { initMapControls } from '../dfs-maze/ui/map-selection.js';
-import { scheduleOscillator, AudioNote, audioEngine } from '../audio/index.js';
-
+import { scheduleOscillator, AudioNote, audioEngine } from '../dfs-maze/audio/index.js';
+import { TransformList } from '../dfs-maze/canvas/TransformList.js';
 import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
-const { sleep, template, utils, download, TwoWayMap } = ham;
 
-const { forkJoin, Observable, iif, BehaviorSubject, AsyncSubject, Subject, interval, of, fromEvent, merge, empty, delay, from } = rxjs;
-const { flatMap, reduce, groupBy, toArray, mergeMap, switchMap, scan, map, tap, filter } = rxjs.operators;
+const { sleep, template, utils, download, TwoWayMap } = ham;
+const { fromEvent } = rxjs;
+const { tap } = rxjs.operators;
 
 const useTemplate = (templateName, options = {}) => {
   const el = document.querySelector(`[data-template="${templateName}"]`).cloneNode(true);
@@ -26,49 +26,10 @@ const useTemplate = (templateName, options = {}) => {
   return el;
 };
 
-const audioNote1 = (new AudioNote(audioEngine));
-
-const graph = new Graph();
-graph.fromMap(maps.BABY_MAP_6X6);
-
-// await sleep(1000)
-// setTimeout(() => {
-const canvasEl = document.querySelector('#canvas');
-const svgCanvas = new SVGCanvas(canvasEl);
-
-const actor1 = useTemplate('actor', {
-  dataset: { moving: false, teleporting: false },
-  id: 'actor1',
-});
-
-const actor2 = useTemplate('actor', {
-  dataset: { moving: false, teleporting: false },
-  fill: '#C1723B',
-  id: 'actor2',
-});
-
-initMapControls(graph, svgCanvas, actor1);
-
 const domPoint = (element, x, y) => {
   return new DOMPoint(x, y).matrixTransform(
     element.getScreenCTM().inverse()
   );
-};
-
-const setCanvasDimensions = (svgCanvas) => {
-  if (svgCanvas.parentElement) {
-    const { width, height } = svgCanvas.parentElement.getBoundingClientRect();
-    
-    svgCanvas.setAttribute('width', width);
-    svgCanvas.setAttribute('height', height);
-  }
-  
-  else {
-    svgCanvas.setAttribute('width', window.innerWidth);
-    svgCanvas.setAttribute('height', window.innerHeight);
-  }
-  
-  return svgCanvas;
 };
 
 const getAspectRatio = (svgCanvas) => {
@@ -77,19 +38,6 @@ const getAspectRatio = (svgCanvas) => {
   return width / height;
 };
 
-const ANIM_RATE = 75;
-
-const app = document.querySelector('#app');
-const appBody = app.querySelector('#app-body');
-
-const scene = svgCanvas.dom.querySelector('#scene');
-const tileLayer = scene.querySelector('#tile-layer');
-const objectLayer = scene.querySelector('#object-layer');
-
-const selectionBox = getTileSelector(objectLayer);
-const contextMenu = useTemplate('context-menu');
-
-let selectedRange = []
 let getSelectedRange = () => [...tileLayer.querySelectorAll('.tile[data-selected="true"]')];
 
 const tileAt = (x, y) => tileLayer.querySelector(`.tile[data-y="${y}"][data-x="${x}"]`);
@@ -100,7 +48,7 @@ const deselectRange = () => {
   });
 };
 
-const computeArrowEndpoint = (origin, tileCenter, tileSize = [1,1]) => {
+const computeArrowEndpoint = (origin, tileCenter, tileSize = [1, 1]) => {
   const [ox, oy] = origin;
   const [tx, ty] = tileCenter;
   const [tw, th] = tileSize;
@@ -122,18 +70,13 @@ const computeArrowEndpoint = (origin, tileCenter, tileSize = [1,1]) => {
   return [ex, ey];
 }
 
-
 const createEdgeLine = (pt1, pt2) => {
   const line = useTemplate('edge-line');
   
-  const [endX, endY] = computeArrowEndpoint([
-      pt1.x + 0.5,
-      pt1.y + 0.5,
-    ],
-    [
-      pt2.x + 0.5,
-      pt2.y + 0.5,
-    ])
+  const [endX, endY] = computeArrowEndpoint(
+    [pt1.x + 0.5, pt1.y + 0.5],
+    [pt2.x + 0.5, pt2.y + 0.5]
+  );
   
   line.firstElementChild.setAttribute('x1', pt1.x + 0.5);
   line.firstElementChild.setAttribute('y1', pt1.y + 0.5);
@@ -142,7 +85,6 @@ const createEdgeLine = (pt1, pt2) => {
   
   return line;
 };
-
 
 const getRange = ({ start, end }) => {
   let range = [];
@@ -162,15 +104,56 @@ const getRange = ({ start, end }) => {
   return range;
 };
 
+
+const ANIM_RATE = 75;
+let selectedRange = [];
+
+const audioNote1 = (new AudioNote(audioEngine));
+
+const graph = new Graph();
+graph.fromMap(maps.BABY_MAP_6X6);
+
+const app = document.querySelector('#app');
+const appBody = app.querySelector('#app-body');
+const canvasEl = document.querySelector('#canvas');
+
+const svgCanvas = new SVGCanvas(canvasEl);
+
+const scene = svgCanvas.dom.querySelector('#scene');
+const tileLayer = scene.querySelector('#tile-layer');
+const objectLayer = scene.querySelector('#object-layer');
+
+const selectionBox = getTileSelector(objectLayer);
+
+
+const contextMenu = useTemplate('context-menu');
+const contextMenuTransformList = new TransformList(svgCanvas, contextMenu)
+
+const actor1 = useTemplate('actor', {
+  dataset: { moving: false, teleporting: false },
+  id: 'actor1',
+});
+const actor1TransformList = new TransformList(svgCanvas, actor1)
+
+const actor2 = useTemplate('actor', {
+  dataset: { moving: false, teleporting: false },
+  fill: '#C1723B',
+  id: 'actor2',
+});
+const actor2TransformList = new TransformList(svgCanvas, actor2)
+
+initMapControls(graph, svgCanvas, actor1);
+
+actor2.setAttribute('transform', 'translate(12,21) rotate(0) scale(1)');
+
+objectLayer.setAttribute('transform', 'translate(0,0) rotate(0) scale(1)');
+objectLayer.append(actor1, actor2, contextMenu);
+
 selectionBox.on('selection', range => {
   selectedRange = getRange(range);
   
   const { startPoint, endPoint } = selectionBox;
-  
-  contextMenu.setAttribute(
-    'transform',
-    `translate(${endPoint.x+1.5},${endPoint.y-5}) rotate(0) scale(0.05)`,
-  );
+  contextMenuTransformList.translateTo(endPoint.x + 1.5, endPoint.y - 5)
   
   graph.getRange(range, (tile) => tile.selected = true);
 });
@@ -199,11 +182,6 @@ const pageScrolling = {
   }
 }
 
-actor2.setAttribute('transform', 'translate(12,21) rotate(0) scale(1)');
-
-objectLayer.setAttribute('transform', 'translate(0,0) rotate(0) scale(1)');
-objectLayer.append(actor1, actor2, contextMenu);
-
 const sceneBCR = scene.getBoundingClientRect();
 const sceneBBox = scene.getBBox();
 const canvasViewBox = svgCanvas.viewBox;
@@ -222,8 +200,6 @@ const pointerup$ = fromEvent(svgCanvas, 'pointerup');
 pointerup$.pipe(
   tap(x => pageScrolling.enable()),
 ).subscribe();
-
-const { width, height } = scene.getBoundingClientRect();
 
 graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
   tileLayer.append(
@@ -268,6 +244,7 @@ svgCanvas.addEventListener('click', async ({ detail }) => {
   
   let tile = detail.target.closest('.tile');
   let activeActor;
+  let actorTrans = activeActor === actor1 ? actor1TransformList : actor2TransformList
   
   const actorTarget = detail.target.closest('.actor');
   
@@ -381,10 +358,8 @@ svgCanvas.addEventListener('click', async ({ detail }) => {
         activeActor.dataset.x = curr.x;
         activeActor.dataset.y = curr.y;
         
-        activeActor.setAttribute(
-          'transform',
-          `translate(${curr.x},${curr.y}) rotate(0) scale(1)`
-        );
+        actorTrans = activeActor === actor1 ? actor1TransformList : actor2TransformList
+        actorTrans.translateTo(curr.x, curr.y)
         
         svgCanvas.panViewport({
           x: (curr.x - (svgCanvas.viewBox.width / 2)) * 0.025,
@@ -429,10 +404,12 @@ svgCanvas.addEventListener('click', async ({ detail }) => {
           activeActor.dataset.x = el.dataset.x;
           activeActor.dataset.y = el.dataset.y;
           
-          activeActor.setAttribute(
-            'transform',
-            `translate(${el.dataset.x},${el.dataset.y}) rotate(0) scale(1)`,
-          );
+          actorTrans = activeActor === actor1 ? actor1TransformList : actor2TransformList
+          actorTrans.translateTo(el.dataset.x, el.dataset.y)
+          // activeActor.setAttribute(
+          //   'transform',
+          //   `translate(${el.dataset.x},${el.dataset.y}) rotate(0) scale(1)`,
+          // );
           
           el.dataset.active = false;
           el.dataset.current = false;
