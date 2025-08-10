@@ -50,14 +50,8 @@ export class TransformList {
   #self = null;
   #canvas = null;
   #transforms = null;
-  #transformMap = new Map([
-    [SVGTransform.SVG_TRANSFORM_TRANSLATE, null],
-    [SVGTransform.SVG_TRANSFORM_ROTATE, null],
-    [SVGTransform.SVG_TRANSFORM_SCALE, null],
-  ]);
   
   constructor(svgCanvas, element, { transforms } = DEFAULT_TRANSFORMS) {
-    // console.warn('svgCanvas, element, { transforms } ', svgCanvas, element, transforms)
     this.#canvas = svgCanvas;
     this.#self = (element.dom ?? element).transform.baseVal;
     
@@ -74,8 +68,6 @@ export class TransformList {
       else {
         this.insert(t);
       }
-      
-      this.#transformMap.set(t.type, t)
     });
   }
   
@@ -159,9 +151,9 @@ export class TransformList {
   
   get transformItems() { return [...this.#self] };
   
-  
   get translation() {
     const { e, f } = this.getMatrixAt(TransformIndexMap.translate)
+    
     return {
       x: roundTwo(e),
       y: roundTwo(f),
@@ -169,16 +161,20 @@ export class TransformList {
   }
   
   get rotation() {
+    const { b, c } = this.getMatrixAt(TransformIndexMap.rotate)
+    
     return {
-      x: roundTwo(this.getMatrixAt(1).b),
-      y: roundTwo(this.getMatrixAt(1).c),
+      x: roundTwo(b),
+      y: roundTwo(c),
     }
   }
   
   get scale() {
+    const { a, d } = this.getMatrixAt(TransformIndexMap.scale)
+    
     return {
-      x: roundTwo(this.getMatrixAt(2).a),
-      y: roundTwo(this.getMatrixAt(2).d),
+      x: roundTwo(a),
+      y: roundTwo(d),
     }
   }
 }

@@ -522,11 +522,11 @@ svgCanvas.layers.tile.addEventListener('contextmenu', e => {
   selectionBox.insertAt(targ);
   
   contextMenu.parentElement.append(contextMenu);
-  
-  contextMenu.setAttribute(
-    'transform',
-    `translate(${+targ.dataset.x+1.5},${+targ.dataset.y-2}) rotate(0) scale(0.05)`,
-  );
+  contextMenuTransformList.translateTo(+targ.dataset.x+1.5, +targ.dataset.y-2)
+  // contextMenu.setAttribute(
+  //   'transform',
+  //   `translate(${+targ.dataset.x+1.5},${+targ.dataset.y-2}) rotate(0) scale(0.05)`,
+  // );
   
   contextMenu.dataset.show = true;
   
@@ -548,8 +548,11 @@ svgCanvas.layers.tile.addEventListener('contextmenu', e => {
       selectionBox.remove();
       
       contextMenu.dataset.show = false;
-      contextMenu.setAttribute('transform', `translate(0,0) rotate(0) scale(0.05)`);
       
+      // contextMenu.setAttribute('transform', `translate(0,0) rotate(0) scale(0.05)`);
+      contextMenuTransformList.translateTo(0, 0);
+      contextMenuTransformList.rotateTo(0, 0);
+      contextMenuTransformList.scaleTo(0.5);
       svgCanvas.removeEventListener('click', blurContextMenu);
     }
     
