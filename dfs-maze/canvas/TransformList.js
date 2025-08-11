@@ -122,7 +122,12 @@ export class TransformList {
   
   scaleTo(x = 1, y = 1) {
     const scale = this.getItem(TransformIndexMap.scale);
-    scale.setScale(deg, x, y);
+    if (y) {
+     scale.setScale(x, y); 
+    } else {
+     scale.setScale(x); 
+    }
+    
     
     return this;
   }

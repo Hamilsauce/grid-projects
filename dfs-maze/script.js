@@ -127,8 +127,25 @@ const selectionBox = getTileSelector(objectLayer);
 
 
 const contextMenu = useTemplate('context-menu');
-const contextMenuTransformList = new TransformList(svgCanvas, contextMenu)
-
+const contextMenuTransformList = new TransformList(svgCanvas, contextMenu,
+{
+  transforms: [
+  {
+    type: 'translate',
+    values: [0, 0],
+    position: 0,
+  },
+  {
+    type: 'rotate',
+    values: [0, 0, 0],
+    position: 1,
+  },
+  {
+    type: 'scale',
+    values: [0.05, 0.05],
+    position: 2,
+  }, ]
+});
 const actor1 = useTemplate('actor', {
   dataset: { moving: false, teleporting: false },
   id: 'actor1',
@@ -154,6 +171,8 @@ selectionBox.on('selection', range => {
   
   const { startPoint, endPoint } = selectionBox;
   contextMenuTransformList.translateTo(endPoint.x + 1.5, endPoint.y - 5)
+  console.warn('contextMenuTransformList.scale', contextMenuTransformList.scale)
+  console.warn('contextMenuTransformList.translation', contextMenuTransformList.translation)
   
   graph.getRange(range, (tile) => tile.selected = true);
 });
@@ -182,9 +201,9 @@ const pageScrolling = {
   }
 }
 
-const sceneBCR = scene.getBoundingClientRect();
-const sceneBBox = scene.getBBox();
-const canvasViewBox = svgCanvas.viewBox;
+// const sceneBCR = scene.getBoundingClientRect();
+// const sceneBBox = scene.getBBox();
+// const canvasViewBox = svgCanvas.viewBox;
 
 svgCanvas.setViewBox({
   x: -0.5,
@@ -522,12 +541,11 @@ svgCanvas.layers.tile.addEventListener('contextmenu', e => {
   selectionBox.insertAt(targ);
   
   contextMenu.parentElement.append(contextMenu);
-  contextMenuTransformList.translateTo(+targ.dataset.x+1.5, +targ.dataset.y-2)
+  contextMenuTransformList.translateTo(+targ.dataset.x + 1.5, +targ.dataset.y - 2)
   // contextMenu.setAttribute(
   //   'transform',
   //   `translate(${+targ.dataset.x+1.5},${+targ.dataset.y-2}) rotate(0) scale(0.05)`,
   // );
-  
   contextMenu.dataset.show = true;
   
   const blurContextMenu = (e) => {
@@ -549,10 +567,8 @@ svgCanvas.layers.tile.addEventListener('contextmenu', e => {
       
       contextMenu.dataset.show = false;
       
-      // contextMenu.setAttribute('transform', `translate(0,0) rotate(0) scale(0.05)`);
       contextMenuTransformList.translateTo(0, 0);
       contextMenuTransformList.rotateTo(0, 0);
-      contextMenuTransformList.scaleTo(0.5);
       svgCanvas.removeEventListener('click', blurContextMenu);
     }
     

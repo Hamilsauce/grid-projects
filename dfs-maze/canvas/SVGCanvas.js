@@ -1,6 +1,6 @@
 import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
 import { createCustomEvent } from '../../dfs-maze/lib/create-event.js';
-
+import { CanvasObject, DefaultCanvasObjectOptions } from '../../dfs-maze/canvas/CanvasObject.js';
 const { addPanAction, template, utils, download, TwoWayMap } = ham;
 
 const { forkJoin, Observable, iif, BehaviorSubject, AsyncSubject, Subject, interval, of, fromEvent, merge, empty, delay, from } = rxjs;
@@ -89,12 +89,31 @@ export class SVGCanvas extends EventTarget {
   
   get viewport() { return this.dom.getBoundingClientRect(); }
   
+  useTemplate(templateName, options = {}) {
+    const el = this.#self.querySelector(`[data-template="${templateName}"]`).cloneNode(true);
+    
+    delete el.dataset.template;
+    
+    if (options.dataset) Object.assign(el.dataset, options.dataset);
+    
+    if (options.id) el.id = options.id;
+    
+    if (options.fill) el.style.fill = options.fill;
+    
+    return el;
+  };
+  
   domPoint(x, y) {
     return new DOMPoint(x, y).matrixTransform(
       this.dom.getScreenCTM().inverse()
     );
   }
   
+  createCanvasObject(type, options = DefaultCanvasObjectOptions) {
+    const cObj = new CanvasObject(this, type, options);
+    
+    return cObj;
+  }
   
   #toggleScroll(x, y) {
     this.#isContextMenuActive = !this.#isContextMenuActive;
@@ -106,28 +125,6 @@ export class SVGCanvas extends EventTarget {
       this.dom.addEventListener('contextmenu', this.toggleScroll);
       this.dom.removeEventListener('click', this.toggleScroll);
     }
-  }
-  
-  createDOM(type, { classList, width, height, x, y, text, dataset }) {
-    const g = document.createElementNS(SVG_NS, 'g');
-    const el = document.createElementNS(SVG_NS, type);
-    
-    Object.assign(g.dataset, dataset);
-    
-    g.setAttribute('transform', `translate(${dataset.x},${dataset.y})`);
-    g.classList.add(...(classList || ['tile']));
-    g.id = 'rect' + utils.uuid();
-    
-    r.setAttribute('width', width);
-    r.setAttribute('height', height);
-    
-    g.append(r);
-    
-    if (text) {
-      g.append(createText({ textContent: text }));
-    }
-    
-    return g;
   }
   
   createRect({ classList, width, height, x, y, textContent, dataset }) {
@@ -200,14 +197,14 @@ export class SVGCanvas extends EventTarget {
     return this;
   }
   
-  isInView(coords) {
-    const { x, y, width, height } = this.viewBox;
-    
-    return coords.x >= x &&
-      coords.y >= y &&
-      coords.x <= width &&
-      coords.y <= height;
-  }
+  // isInView(coords) {
+  //   const { x, y, width, height } = this.viewBox;
+  
+  //   return coords.x >= x &&
+  //     coords.y >= y &&
+  //     coords.x <= width &&
+  //     coords.y <= height;
+  // }
   
   getPixelAspectRatio() {
     const { width, height } = this.#self.getBoundingClientRect();
