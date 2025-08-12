@@ -43,14 +43,20 @@ body {
   height: 100%;
 }
 
+#app-host {
+  width: 100%;
+  height: 100%;
+}
+
 #app {
   display: grid;
   grid-template-rows: auto 1fr 60px;
   grid-template-columns: 1fr;
-  gap: 0px;
+  gap: 4px;
   width: 100%;
   height: 100%;
   overflow: scroll;
+  background: #3F3F3F;
 }
 
 #app-header {
@@ -71,7 +77,7 @@ body {
   background: #FFFFFF;
 } */
 
-#app-state-display{
+#app-state-display {
   padding: 4px;
   font-size: 12px;
 }
@@ -82,10 +88,13 @@ body {
   justify-content: flex-start;
   align-items: flex-start;
   gap: 0px;
-  /* overflow-y: scroll; */
+  overflow-y: hidden;
   /* width: 100%; */
   /* padding: 4px; */
+  height: 100%;
+  
 }
+
 #app-footer {
   display: flex;
   flex-direction: row;
