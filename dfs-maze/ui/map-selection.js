@@ -30,8 +30,9 @@ export const initMapControls = async (graph, svgCanvas, actor1) => {
     e.remove();
   });
   const blankOpt = { id: null, name: '' };
+  const defaultOpt = { id: 'zYCxQlIXijeHjuwqCK7A', name: 'suk' };
   
-  [blankOpt, ...mapNames].forEach((m) => {
+  [defaultOpt, ...mapNames].forEach((m) => {
     const opt = document.createElement('option');
     opt.value = m.id;
     opt.textContent = m.name;
@@ -103,3 +104,9 @@ export const initMapControls = async (graph, svgCanvas, actor1) => {
     }),
   ).subscribe()
 }
+
+setTimeout(() => {
+  console.log(' ', );
+  mapInput.dispatchEvent(new Event('change'))
+  
+}, 500)

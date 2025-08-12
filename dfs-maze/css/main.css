@@ -26,7 +26,7 @@ body {
 #surface {
   fill: #CCCCCC;
   filter: drop-shadow(0 0px 1px #00000057);
-
+  
 }
 
 #context-menu[data-show=false] {
@@ -80,14 +80,30 @@ body {
   white-space: nowrap;
 }
 
-.context-menu-list.secondary li {
-  /* background: #E4E4E4; */
-  /* background: #D0EBAC; */
+/* .context-menu-list.secondary {
+  display: none;
+  height: 0;
+}
 
+.context-menu[data-show=true][data-show-actions=false] .context-menu-list.secondary {
+  display: none;
+  height: 0;
+}
+
+.context-menu[data-show=true][data-show-actions=true] .context-menu-list.secondary {
+  display: none;
+  height: 100%;
+  
 }
 
 
-.edge-line > line {
+.context-menu-list.secondary li {
+  background: #E4E4E4;
+  background: #D0EBAC;
+}
+
+ */
+.edge-line>line {
   stroke: #0006FF;
   stroke-width: 0.1;
 }

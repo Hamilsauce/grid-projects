@@ -24,11 +24,13 @@ const DIRECTIONS = new Map([
 
 export class GraphNode {
   #tileType = null;
+  #target = { x: 0, y: 0 };
   #point = { x: 0, y: 0 };
   isPathNode = false;
   isVisited = false;
   previous = null;
-  
+  #linkedNodeAddress = null;
+
   constructor({ tileType, x, y }) {
     this.#tileType = tileType;
     this.#point = { x, y };
@@ -53,6 +55,28 @@ export class GraphNode {
     console.warn('SET NODE TYPE. NEW: ', type)
     this.#tileType = type
   }
+  
+  
+  get linkedNodeAddress() { return this.#target ? [this.#target.x, this.#target.y].join('_') : null; }
+  
+  get target() { return this.#target }
+  
+  set target(v) { this.#target = v }
+  
+  linkToNode({ x, y }) {
+    this.#target = { x, y };
+  }
+  
+  linkToAddress(addressKey) {
+    this.#linkedNodeAddress = addressKey;
+  }
+  
+  unlink() {
+    const address = this.#linkedNodeAddress;
+    this.#linkedNodeAddress = null;
+    return address
+  }
+  
   
   toJSON() {
     return {

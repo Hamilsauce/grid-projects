@@ -111,7 +111,6 @@ let selectedRange = [];
 const audioNote1 = (new AudioNote(audioEngine));
 
 const graph = new Graph();
-graph.fromMap(maps.BABY_MAP_6X6);
 
 const app = document.querySelector('#app');
 const appBody = app.querySelector('#app-body');
@@ -124,7 +123,6 @@ const tileLayer = scene.querySelector('#tile-layer');
 const objectLayer = scene.querySelector('#object-layer');
 
 const selectionBox = getTileSelector(objectLayer);
-
 
 const contextMenu = useTemplate('context-menu');
 const contextMenuTransformList = new TransformList(svgCanvas, contextMenu,
@@ -171,8 +169,6 @@ selectionBox.on('selection', range => {
   
   const { startPoint, endPoint } = selectionBox;
   contextMenuTransformList.translateTo(endPoint.x + 1.5, endPoint.y - 5)
-  console.warn('contextMenuTransformList.scale', contextMenuTransformList.scale)
-  console.warn('contextMenuTransformList.translation', contextMenuTransformList.translation)
   
   graph.getRange(range, (tile) => tile.selected = true);
 });
@@ -200,10 +196,6 @@ const pageScrolling = {
     svgCanvas.dom.style.userSelect = 'none';
   }
 }
-
-// const sceneBCR = scene.getBoundingClientRect();
-// const sceneBBox = scene.getBBox();
-// const canvasViewBox = svgCanvas.viewBox;
 
 svgCanvas.setViewBox({
   x: -0.5,
@@ -237,14 +229,22 @@ graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
     }))
 });
 
-const lastX = tileLayer.lastElementChild.dataset.x;
-const lastY = tileLayer.lastElementChild.dataset.y;
+let lastX
+let lastY
+let goalTile
 let isMoving = false;
+let isSelectingLinkTile = false;
 
-tileLayer.dataset.width = lastX;
-tileLayer.dataset.height = lastY;
+setTimeout(() => {
+  lastX = tileLayer.lastElementChild.dataset.x;
+  lastY = tileLayer.lastElementChild.dataset.y;
+  
+  tileLayer.dataset.width = lastX;
+  tileLayer.dataset.height = lastY;
+  
+  goalTile = tileLayer.querySelector('[data-tile-type="goal"]');
+}, 800)
 
-const goalTile = tileLayer.querySelector('[data-tile-type="goal"]');
 
 const oppositeDirMap = new TwoWayMap([
   ['up', 'down'],
@@ -254,6 +254,7 @@ const oppositeDirMap = new TwoWayMap([
 svgCanvas.addEventListener('click', async ({ detail }) => {
   if (isMoving) return;
   if (contextMenu.dataset.show === 'true') return;
+  if (isSelectingLinkTile === true) return;
   
   deselectRange();
   
@@ -425,10 +426,6 @@ svgCanvas.addEventListener('click', async ({ detail }) => {
           
           actorTrans = activeActor === actor1 ? actor1TransformList : actor2TransformList
           actorTrans.translateTo(el.dataset.x, el.dataset.y)
-          // activeActor.setAttribute(
-          //   'transform',
-          //   `translate(${el.dataset.x},${el.dataset.y}) rotate(0) scale(1)`,
-          // );
           
           el.dataset.active = false;
           el.dataset.current = false;
@@ -445,57 +442,6 @@ svgCanvas.addEventListener('click', async ({ detail }) => {
   }
 });
 
-contextMenu.addEventListener('click', e => {
-  e.preventDefault();
-  e.stopPropagation();
-  e.stopImmediatePropagation();
-  
-  const targ = e.target.closest('li');
-  
-  const selectedOption = targ.dataset.value;
-  const selectedTileTypeName = targ.dataset.value;
-  
-  const selectedTile = svgCanvas.layers.tile.querySelector('.tile[data-selected="true"]');
-  const selectedTiles = selectedRange;
-  
-  if (!targ || !selectedTile) return;
-  
-  const node = graph.getNodeAtPoint({
-    x: +selectedTile.dataset.x,
-    y: +selectedTile.dataset.y,
-  });
-  
-  if (selectedOption === 'linkto') {
-    // HANDLE CLICKING OTHER TELEPORT    
-  }
-  
-  node.setType(selectedTileTypeName);
-  
-  selectedTile.dataset.tileType = selectedTileTypeName;
-  selectedTile.dataset.selected = false;
-  
-  selectedRange.forEach((tile, i) => {
-    const nodeModel = graph.getNodeAtPoint({
-      x: +tile.dataset.x,
-      y: +tile.dataset.y,
-    });
-    
-    nodeModel.setType(selectedTileTypeName);
-    
-    if (selectedTileTypeName === 'teleport') {
-      nodeModel.target = { x: 1, y: 1 };
-    }
-    
-    tile.dataset.tileType = selectedTileTypeName;
-  });
-  
-  deselectRange();
-  
-  selectionBox.remove();
-  
-  contextMenu.dataset.show = false;
-});
-
 svgCanvas.layers.tile.addEventListener('contextmenu', e => {
   e.preventDefault();
   e.stopPropagation();
@@ -506,14 +452,7 @@ svgCanvas.layers.tile.addEventListener('contextmenu', e => {
   const listEl = contextMenu.querySelector('.context-menu-list.primary');
   const listEl2 = contextMenu.querySelector('.context-menu-list.secondary');
   
-  const specialItems = [...listEl2.children];
-  
-  specialItems.forEach((el, i) => {
-    el.remove();
-  });
-  
   if (tileType === 'teleport') {
-    // Add a connection line if linked
     const selectedNode = graph.getNodeAtPoint({
       x: +targ.dataset.x,
       y: +targ.dataset.y,
@@ -525,35 +464,20 @@ svgCanvas.layers.tile.addEventListener('contextmenu', e => {
     }
     
     contextMenu.dataset.show = true;
-    
-    
-    const linkToItem = document.createElement('li');
-    
-    linkToItem.dataset.value = 'linkto';
-    linkToItem.textContent = 'Link To...';
-    linkToItem.classList.add('special-menu-item');
-    listEl2.append(linkToItem);
+    contextMenu.dataset.showActions = true;
     
     const htmlListContainer = contextMenu.querySelector('.context-menu-container');
     const svgListContainer = contextMenu.firstElementChild;
     const htmlHeight = htmlListContainer.getBoundingClientRect().height
     
-    console.warn('htmlHeight', htmlHeight)
     svgListContainer.setAttribute('height', isNaN(htmlHeight) ? 150 : htmlHeight)
-    listEl2.style.display = 'flex'
-  } else {
-    listEl2.style.display = 'none'
-  }
+  } else {}
   
   targ.dataset.selected = true;
   selectionBox.insertAt(targ);
   
   contextMenu.parentElement.append(contextMenu);
   contextMenuTransformList.translateTo(+targ.dataset.x + 1.5, +targ.dataset.y - 2)
-  // contextMenu.setAttribute(
-  //   'transform',
-  //   `translate(${+targ.dataset.x+1.5},${+targ.dataset.y-2}) rotate(0) scale(0.05)`,
-  // );
   contextMenu.dataset.show = true;
   
   const blurContextMenu = (e) => {
@@ -562,7 +486,7 @@ svgCanvas.layers.tile.addEventListener('contextmenu', e => {
     e.stopImmediatePropagation();
     pageScrolling.enable();
     
-    console.log(pageScrolling.isEnabled);
+    // console.log(pageScrolling.isEnabled);
     
     const edgeLines = [...objectLayer.querySelectorAll('.edge-line')];
     edgeLines.forEach(el => {
@@ -574,6 +498,7 @@ svgCanvas.layers.tile.addEventListener('contextmenu', e => {
       selectionBox.remove();
       
       contextMenu.dataset.show = false;
+      contextMenu.dataset.showActions = false;
       
       contextMenuTransformList.translateTo(0, 0);
       contextMenuTransformList.rotateTo(0, 0);
@@ -590,4 +515,87 @@ svgCanvas.layers.tile.addEventListener('contextmenu', e => {
     svgCanvas.dispatchEvent(new CustomEvent('blurContextMenu'));
   };
   svgCanvas.addEventListener('click', blurContextMenu);
+});
+
+contextMenu.addEventListener('click', e => {
+  e.preventDefault();
+  e.stopPropagation();
+  e.stopImmediatePropagation();
+  
+  const targ = e.target.closest('li');
+  
+  const selectedOptionValue = targ.dataset.value;
+  const selectedOptionType = targ.dataset.type;
+  const selectedTileTypeName = targ.dataset.value;
+  
+  const selectedTile = svgCanvas.layers.tile.querySelector('.tile[data-selected="true"]');
+  const selectedTiles = selectedRange;
+  
+  if (!targ || !selectedTile) return;
+  
+  const node = graph.getNodeAtPoint({
+    x: +selectedTile.dataset.x,
+    y: +selectedTile.dataset.y,
+  });
+  
+  if (selectedOptionType === 'tile-action') {
+    
+    if (selectedOptionValue === 'link-teleport') {
+      contextMenu.dataset.show = false;
+      isSelectingLinkTile = true;
+      
+      const handleTileLinkSelect = (e) => {
+        const linkTarget = e.target.closest('.tile')
+        const nodeToLink = graph.getNodeAtPoint({
+          x: +linkTarget.dataset.x,
+          y: +linkTarget.dataset.y,
+        });
+        
+        nodeToLink.setType('teleport');
+        
+        node.linkToNode({ x: nodeToLink.x, y: nodeToLink.y });
+        
+        if (!nodeToLink.linkedNodeAddress) {
+          nodeToLink.linkToNode({ x: node.x, y: node.y });
+        }
+        
+        isSelectingLinkTile = false;
+        
+        svgCanvas.dom.removeEventListener('click', handleTileLinkSelect);
+        
+        return;
+      }
+      
+      svgCanvas.dom.addEventListener('click', handleTileLinkSelect);
+      return;
+    }
+  }
+  
+  else if (selectedOptionType === 'tile-type') {
+    node.setType(selectedTileTypeName);
+    
+    selectedTile.dataset.tileType = selectedTileTypeName;
+    selectedTile.dataset.selected = false;
+    
+    selectedRange.forEach((tile, i) => {
+      const nodeModel = graph.getNodeAtPoint({
+        x: +tile.dataset.x,
+        y: +tile.dataset.y,
+      });
+      
+      nodeModel.setType(selectedTileTypeName);
+      
+      if (selectedTileTypeName === 'teleport') {
+        nodeModel.target = { x: 1, y: 1 };
+      }
+      
+      tile.dataset.tileType = selectedTileTypeName;
+    });
+  }
+  
+  deselectRange();
+  
+  selectionBox.remove();
+  
+  contextMenu.dataset.show = false;
 });

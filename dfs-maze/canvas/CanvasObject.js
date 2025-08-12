@@ -32,26 +32,63 @@ export class CanvasObject extends EventEmitter {
     this.#context = context;
     this.#type = type;
     this.#id = options.id;
-    this.#self = this.#context.createCanvasObject(type, options);
+    this.#self = this.#context.useTemplate(type, options);
     this.#transformList = new TransformList(this.#context, this.#self)
   }
   
-  get context() { return this.#context }
+  get context() { return this.#context; }
   
-  get self() { return this.#self }
+  get dom() { return this.#self; }
   
-  get transforms() { return this.#transformList }
+  get data() { return this.dom.dataset; }
   
-  get type() { return this.#type }
+  get transforms() { return this.#transformList; }
   
-  get id() { return this.#id }
+  get type() { return this.#type; }
   
-  get layer() { return this.self.closest('g.layer') }
+  get id() { return this.#id; }
   
+  get layer() { return this.dom.closest('g.layer') }
   
-  translate() {}
-  rotate() {}
-  scale() {}
-
-  remove() {}
+  translateTo(x, y) {
+    this.transforms.translateTo(x, y);
+  }
+  
+  rotateTo() {}
+  
+  scaleTo(x, y) {
+    this.transforms.translateTo(x, y);
+  }
+  
+  remove() {
+    this.dom.remove();
+  }
+  
+  show() {
+    this.data.visible = true;
+  }
+  
+  hide() {
+    this.data.visible = false;
+  }
+  
+  select() {
+    this.data.selected = true;
+  }
+  
+  deselect() {
+    this.data.selected = false;
+  }
+  
+  setData(key, value) {
+    this.data[key] = value;
+  }
+  
+  deleteData(key) {
+    delete this.data[key];
+  }
+  
+  getEl(selector = '') { return this.dom.querySelector(selector); }
+  
+  getEls(selector = '') { return [...this.dom.querySelectorAll(selector)]; }
 }
