@@ -16,7 +16,8 @@ export const DefaultCanvasObjectOptions = {
     r: 0.4,
     width: 1,
     height: 1,
-  }
+  },
+  transforms: [],
 }
 
 export class CanvasObject extends EventEmitter {

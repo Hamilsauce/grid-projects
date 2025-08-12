@@ -452,6 +452,7 @@ contextMenu.addEventListener('click', e => {
   
   const targ = e.target.closest('li');
   
+  const selectedOption = targ.dataset.value;
   const selectedTileTypeName = targ.dataset.value;
   
   const selectedTile = svgCanvas.layers.tile.querySelector('.tile[data-selected="true"]');
@@ -463,6 +464,10 @@ contextMenu.addEventListener('click', e => {
     x: +selectedTile.dataset.x,
     y: +selectedTile.dataset.y,
   });
+  
+  if (selectedOption === 'linkto') {
+    // HANDLE CLICKING OTHER TELEPORT    
+  }
   
   node.setType(selectedTileTypeName);
   
@@ -519,10 +524,8 @@ svgCanvas.layers.tile.addEventListener('contextmenu', e => {
       objectLayer.append(line)
     }
     
+    contextMenu.dataset.show = true;
     
-    const htmlListContainer = contextMenu.querySelector('.context-menu-container');
-    const svgListContainer = contextMenu.firstElementChild;
-    const htmlHeight = htmlListContainer.getBoundingClientRect().height
     
     const linkToItem = document.createElement('li');
     
@@ -531,7 +534,12 @@ svgCanvas.layers.tile.addEventListener('contextmenu', e => {
     linkToItem.classList.add('special-menu-item');
     listEl2.append(linkToItem);
     
-    svgListContainer.setAttribute('height', isNaN(height) ? 150 : height)
+    const htmlListContainer = contextMenu.querySelector('.context-menu-container');
+    const svgListContainer = contextMenu.firstElementChild;
+    const htmlHeight = htmlListContainer.getBoundingClientRect().height
+    
+    console.warn('htmlHeight', htmlHeight)
+    svgListContainer.setAttribute('height', isNaN(htmlHeight) ? 150 : htmlHeight)
     listEl2.style.display = 'flex'
   } else {
     listEl2.style.display = 'none'
