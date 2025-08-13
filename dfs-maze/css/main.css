@@ -23,10 +23,15 @@ body {
   height: 100%;
 }
 
+#canvas{
+  background: #527AC9;
+}
+
 #surface {
   fill: #CCCCCC;
-  filter: drop-shadow(0 0px 1px #00000057);
-  
+  stroke: #FFFFFF80;
+  stroke-width: 0.2;
+  filter: drop-shadow(0 0px 2px #00000065);
 }
 
 #context-menu[data-show=false] {
