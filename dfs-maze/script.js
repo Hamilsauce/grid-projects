@@ -3,6 +3,7 @@ import { SVGCanvas } from '../dfs-maze/canvas/SVGCanvas.js';
 import { maps } from './maps.js';
 import { copyTextToClipboard, dispatchPointerEvent } from '../dfs-maze/lib/utils.js';
 import { getTileSelector } from '../selection-box/SelectionBox.js';
+import { Drawer } from '../dfs-maze/ui/Drawer.js';
 import { initMapControls } from '../dfs-maze/ui/map-selection.js';
 import { scheduleOscillator, AudioNote, audioEngine } from '../dfs-maze/audio/index.js';
 import { TransformList } from '../dfs-maze/canvas/TransformList.js';
@@ -117,6 +118,8 @@ const appBody = app.querySelector('#app-body');
 const canvasEl = document.querySelector('#canvas');
 
 const svgCanvas = new SVGCanvas(canvasEl);
+
+// const drawer = new Drawer('#app')
 
 const scene = svgCanvas.dom.querySelector('#scene');
 const tileLayer = scene.querySelector('#tile-layer');

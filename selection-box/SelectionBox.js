@@ -221,6 +221,8 @@ export class TileSelector extends EventEmitter {
   }
   
   onDragStart(e) {
+    e.stopPropagation();
+    e.preventDefault();
     const handle = e.target.closest('.selection-handle');
     
     if (handle) {

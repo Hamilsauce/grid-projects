@@ -1,16 +1,12 @@
 import { ref } from 'vue'
 // import { defineComponent, getTemplate } from '../../lib/index.js';
 import { defineComponent, getTemplate } from '../../../lib/vue-helpers.js';
-import { AppToolbar } from '../../../dfs-maze/ui/AppToolbar.js';
+
 // console.warn('defineComponent', defineComponent)
-export const AppFooter = defineComponent(
-  getTemplate('app-footer'),
+export const AppToolbar = defineComponent(
+  getTemplate('app-toolbar'),
   (props) => {
     const count = ref(0);
     return { count }
-  }, {
-    components: {
-      'app-toolbar': AppToolbar,
-    }
-  },
+  }, {},
 )
