@@ -98,7 +98,10 @@ export class TileSelector extends EventEmitter {
       this.ctx.getScreenCTM().inverse()
     );
     
-    return { x: dir === 'floor' ? Math.floor(p.x) : Math.ceil(p.x), y: dir === 'floor' ? Math.floor(p.y) : Math.ceil(p.y) };
+    return {
+      x: dir === 'floor' ? Math.floor(p.x) : Math.ceil(p.x),
+      y: dir === 'floor' ? Math.floor(p.y) : Math.ceil(p.y)
+    };
   }
   
   createSelectionHandle(handleLabel = 'start') {

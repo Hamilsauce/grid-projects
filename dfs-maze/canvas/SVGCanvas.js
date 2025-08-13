@@ -1,6 +1,8 @@
 import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
 import { createCustomEvent } from '../../dfs-maze/lib/create-event.js';
 import { CanvasObject, DefaultCanvasObjectOptions } from '../../dfs-maze/canvas/CanvasObject.js';
+import { getPanZoom } from '../../dfs-maze/lib/gpt-pan-zoom.js';
+
 const { addPanAction, template, utils, download, TwoWayMap } = ham;
 
 const { forkJoin, Observable, iif, BehaviorSubject, AsyncSubject, Subject, interval, of, fromEvent, merge, empty, delay, from } = rxjs;
@@ -45,8 +47,9 @@ export class SVGCanvas extends EventTarget {
       this.panViewport(vb)
     })
     
-    this.panAction$.subscribe()
-    
+    // Uncomment to enable viewboc pan
+    // this.panAction$.subscribe()
+    getPanZoom(this.dom)
     this.clickDOM$ = fromEvent(this.#self, 'click')
       .pipe(
         tap(e => {
