@@ -1,7 +1,7 @@
 import { Graph, TILE_TYPE_INDEX } from './lib/store.js';
 import { SVGCanvas } from '../dfs-maze/canvas/SVGCanvas.js';
 import { maps } from './maps.js';
-import { copyTextToClipboard } from '../dfs-maze/lib/utils.js';
+import { copyTextToClipboard, dispatchPointerEvent } from '../dfs-maze/lib/utils.js';
 import { getTileSelector } from '../selection-box/SelectionBox.js';
 import { initMapControls } from '../dfs-maze/ui/map-selection.js';
 import { scheduleOscillator, AudioNote, audioEngine } from '../dfs-maze/audio/index.js';
@@ -443,6 +443,7 @@ svgCanvas.addEventListener('click', async ({ detail }) => {
 });
 
 svgCanvas.layers.tile.addEventListener('contextmenu', e => {
+  console.log(e.constructor.name)
   e.preventDefault();
   e.stopPropagation();
   e.stopImmediatePropagation();
@@ -562,6 +563,8 @@ contextMenu.addEventListener('click', e => {
         isSelectingLinkTile = false;
         
         svgCanvas.dom.removeEventListener('click', handleTileLinkSelect);
+        
+        dispatchPointerEvent(selectedTile, 'contextmenu')
         
         return;
       }
