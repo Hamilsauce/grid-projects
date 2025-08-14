@@ -1,5 +1,5 @@
 import { ref, computed, watch, defineProps } from 'vue'
-import { defineComponent, getTemplate } from '../../../lib/vue-helpers.js';
+import { defineComponent, getTemplate } from '../../lib/vue-helpers.js';
 import { AppToolbar } from '../../../dfs-maze/ui/AppToolbar.js';
 
 export const AppFooter = defineComponent(

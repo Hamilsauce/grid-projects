@@ -50,7 +50,7 @@ const defaultContextMenuItems = [
 },
 {
   type: 'tile-action',
-  values: 'link-teleport',
+  value: 'link-teleport',
   textContent: 'Link to...',
   list: 'secondary',
 }, ];
@@ -74,7 +74,10 @@ export class ContextMenu extends CanvasObject {
     
   };
   
-  onMenuClick(e) {}
+  onMenuClick(e) {
+    const value = e.target.dataset.value
+    this.dispatchEvent('')
+  }
   
   toggleSecondaryMenu() {}
   
