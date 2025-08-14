@@ -89,8 +89,18 @@ body {
 }
 
 .hide {
+  display: none;
+
   height: 0px;
   padding: 0;
+}
+
+.drawer[data-show=true] {
+  display: grid;
+}
+
+.drawer[data-show=false] {
+  display: none;
 }
 
 .expand {}

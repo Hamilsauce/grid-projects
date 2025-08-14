@@ -15,15 +15,37 @@ export class Drawer extends EventTarget {
     return parseInt(getComputedStyle(this.drawer).height)
   }
   
+  get self() {
+    return this.drawer;
+  }
+  
+  get isVisible() {
+    return this.self.dataset.show == 'true' ? true : false;
+  }
+  
   get options() {
     return [...this.optionsContainer.children]
   }
   
-  init() {
-    this.parent.appendChild(this.drawer)
+  show() {
+    this.self.dataset.show = true;
+    
+  }
+  hide() {
+    this.self.dataset.show = false;
+  }
+  
+  init(shouldShow = true) {
+    if (shouldShow) {
+      this.show()
+    } else {
+      this.hide()
+    }
+    
+    this.parent.appendChild(this.drawer);
     this.handle.addEventListener('dblclick', this.doubleClickDrawerHandle.bind(this));
     
-    this.optionsContainer.addEventListener('click', this.handleClick)
+    this.optionsContainer.addEventListener('click', this.handleClick);
     
     this.parent.addEventListener('click', e => {
       const pathContains = [...e.composedPath()].some(_ => _ === this.drawer)

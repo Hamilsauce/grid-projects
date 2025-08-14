@@ -112,7 +112,7 @@ let selectedRange = [];
 const audioNote1 = (new AudioNote(audioEngine));
 
 const graph = new Graph();
-
+// await sleep(500)
 const app = document.querySelector('#app');
 const appBody = app.querySelector('#app-body');
 const canvasEl = document.querySelector('#canvas');

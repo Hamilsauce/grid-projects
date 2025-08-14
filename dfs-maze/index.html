@@ -41,9 +41,11 @@
   
   <template data-component="app">
     <div id="app">
-      <app-header></app-header>
+      <app-header @footertoggle="handleFooterChange"></app-header>
+      <!-- <app-header></app-header> -->
       <app-body></app-body>
-      <app-footer></app-footer>
+      <app-footer :show-toolbar="showToolbar"></app-footer>
+      <!-- <app-footer></app-footer> -->
     </div>
   </template>
   
@@ -51,7 +53,10 @@
     <header id="app-header">
       <div id="app-header-left"></div>
       <div id="app-header-center">
-        <h1>Shortest Path King</h1>
+        <h2>Shortest Path King</h2>
+        <div id="app-header-center-bottom">
+          <button @click="handleFooterToggle" id="footer-toggle" type="button">Toggle {{ footerState }}</button>
+        </div>
       </div>
       <div id="app-header-right">
         <div id="app-state-display"></div>
@@ -126,7 +131,7 @@
   
     <footer id="app-footer">
       
-      <div id="app-footer-top">
+      <div v-if="showToolbar" id="app-footer-top">
         <div class="scroll-fader"></div>
         <div id="controls" data-controls="tile-brushes" class="container">
           <button class="app-button tile-selector" data-active="true" data-tile-type="barrier">Barrier</button>
@@ -137,7 +142,7 @@
           <button class="app-button tile-selector" data-tile-type="delete">DELETE</button>
         </div>
       </div>
-      <div id="app-footer-bottom">
+      <div v-if="showToolbar" id="app-footer-bottom">
         
         <div id="tool-labels">
           <div class="tool-label" data-active="false" data-tool-group="favorites" id="favorites-label">

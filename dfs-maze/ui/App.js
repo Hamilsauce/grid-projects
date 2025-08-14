@@ -1,6 +1,7 @@
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { defineComponent, getTemplate } from '../../lib/vue-helpers.js';
 // import { savedProjects ,tripleProjects} from '../data/projects.js';
+import { Drawer } from '../../dfs-maze/ui/Drawer.js';
 
 import { AppHeader } from '../../dfs-maze/ui/app-shell/AppHeader.js';
 import { AppBody } from '../../dfs-maze/ui/app-shell/AppBody.js';
@@ -13,10 +14,34 @@ const t = getTemplate('app');
 export const App = defineComponent(
   getTemplate('app', true),
   () => {
-    const count = ref(0);
-    const listItems = computed(() => tripleProjects);
+    const drawer = new Drawer('#app-host')
+    drawer.hide();
+    
+    const footerDisplayState = ref('toolbar');
+    // const count = ref(0);
+    
+    const footerDisplay = computed(() => footerDisplayState.value);
+    const showToolbar = computed(() => footerDisplay.value === 'toolbar');
+    // const sh = computed(() => footerDisplay.value === 'toolbar');
+    
+    // const listItems = computed(() => tripleProjects);
     // const listItems = ref(listItemsData);
-    return { count, listItems }
+    const handleFooterChange = (e) => {
+      // console.warn('[IN APP handleFooterChange]', e)
+      footerDisplayState.value = e
+    };
+    
+    watch(footerDisplay, (value) => {
+      // console.warn('footerDisplay', footerDisplay.value)
+      // console.warn('showToolbar', showToolbar.value)
+      if (value === 'drawer') {
+        drawer.show()
+      }
+      else {
+        drawer.hide()
+      }
+    })
+    return { showToolbar, footerDisplayState, handleFooterChange }
   },
   {
     components: {
