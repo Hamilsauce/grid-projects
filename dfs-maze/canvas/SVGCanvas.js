@@ -10,6 +10,7 @@ const { flatMap, reduce, groupBy, toArray, mergeMap, switchMap, scan, map, tap, 
 
 export class SVGCanvas extends EventTarget {
   #self = null;
+  #surface = null;
   #isContextMenuActive = false;
   
   constructor(svg) {
@@ -19,7 +20,7 @@ export class SVGCanvas extends EventTarget {
     
     this.surfaceLayer = this.dom.querySelector('#surface-layer');
     
-    this.surface = this.surfaceLayer.querySelector('#surface');
+    this.#surface = this.surfaceLayer.querySelector('#surface');
     
     this.layers = {
       surface: this.dom.querySelector('#surface-layer'),
@@ -86,6 +87,8 @@ export class SVGCanvas extends EventTarget {
   
   get scene() { return this.#self.querySelector('#scene') }
   
+  get surface() { return this.#surface }
+  
   get parentElement() { return this.#self.parentElement }
   
   get viewBox() { return this.#self.viewBox.baseVal }
@@ -137,6 +140,7 @@ export class SVGCanvas extends EventTarget {
     Object.assign(g.dataset, dataset);
     g.setAttribute('transform', `translate(${dataset.x},${dataset.y})`);
     g.classList.add(...(classList || ['tile']));
+    r.classList.add('gradient')
     g.id = 'rect' + utils.uuid();
     
     r.setAttribute('width', width);
@@ -194,7 +198,16 @@ export class SVGCanvas extends EventTarget {
     
     setTimeout(() => {
       const tileBB = this.layers.tile.getBBox()
-      this.surface.setAttribute('transform', `translate(0,0) rotate(0) scale(${tileBB.width/10},${tileBB.height/15})`);
+      // const w = this.layers.tile.dataset
+      // const h = this.layers.tile.dataset.height
+      
+      // this.surface.width.baseVal.value = (tileBB.width + 1) / 10
+      // this.surface.height.baseVal.value = (tileBB.height + 1) / 10
+      
+      // this.surface.setAttribute('transform', `translate(0,0) rotate(0) scale(${tileBB.width/10},${tileBB.height/15})`);
+      // this.surface.setAttribute('width', +width)
+      // this.surface.setAttribute('height', +height)
+      // this.surface.style.height = height
     }, 0);
     
     return this;

@@ -1,4 +1,4 @@
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, reactive } from 'vue'
 import { defineComponent, getTemplate } from '../../lib/vue-helpers.js';
 // import { savedProjects ,tripleProjects} from '../data/projects.js';
 import { Drawer } from '../../dfs-maze/ui/Drawer.js';
@@ -32,8 +32,6 @@ export const App = defineComponent(
     };
     
     watch(footerDisplay, (value) => {
-      // console.warn('footerDisplay', footerDisplay.value)
-      // console.warn('showToolbar', showToolbar.value)
       if (value === 'drawer') {
         drawer.show()
       }
@@ -41,6 +39,7 @@ export const App = defineComponent(
         drawer.hide()
       }
     })
+    
     return { showToolbar, footerDisplayState, handleFooterChange }
   },
   {

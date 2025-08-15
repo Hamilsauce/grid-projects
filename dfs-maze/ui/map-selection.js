@@ -93,7 +93,9 @@ export const initMapControls = async (graph, svgCanvas, actor1) => {
               width: 1,
               height: 1,
               // textContent: `${x},${y}`,
+              // classList: ['tile'],
               classList: ['tile'],
+
               dataset: {
                 tileType,
                 x: x,

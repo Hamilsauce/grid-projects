@@ -1,6 +1,3 @@
-import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
-const { template: cloneTemplate, utils } = ham;
-
 export const defineComponent = (template, setupFn = () => {}, options = {}) => {
   return {
     template,

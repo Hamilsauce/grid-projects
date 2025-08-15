@@ -220,7 +220,7 @@ graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
     svgCanvas.createRect({
       width: 1,
       height: 1,
-      classList: ['tile'],
+      classList: ['tile', 'gradient'],
       dataset: {
         tileType,
         x: x,
@@ -228,6 +228,7 @@ graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
         current: false,
         active: false,
         isPathNode: false,
+        fillEffect: 'gradient'
       },
     }))
 });
@@ -239,14 +240,17 @@ let isMoving = false;
 let isSelectingLinkTile = false;
 
 setTimeout(() => {
-  lastX = tileLayer.lastElementChild.dataset.x;
-  lastY = tileLayer.lastElementChild.dataset.y;
+  lastX = +tileLayer.lastElementChild.dataset.x;
+  lastY = +tileLayer.lastElementChild.dataset.y;
   
   tileLayer.dataset.width = lastX;
   tileLayer.dataset.height = lastY;
   
   goalTile = tileLayer.querySelector('[data-tile-type="goal"]');
-}, 800)
+  
+  svgCanvas.surface.setAttribute('width', lastX+1)
+  svgCanvas.surface.setAttribute('height', lastY+1)
+}, 900)
 
 
 const oppositeDirMap = new TwoWayMap([

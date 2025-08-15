@@ -30,7 +30,7 @@ export class GraphNode {
   isVisited = false;
   previous = null;
   #linkedNodeAddress = null;
-
+  
   constructor({ tileType, x, y }) {
     this.#tileType = tileType;
     this.#point = { x, y };

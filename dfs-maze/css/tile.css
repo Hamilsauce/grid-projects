@@ -1,6 +1,6 @@
 .tile rect {
-  fill: #E7E7E7;
-  stroke: #B4B4B4A3;
+  fill: #ECECECD1;
+  stroke: #7F7F7FE8;
   stroke-width: 0.025px;
 }
 
@@ -84,10 +84,12 @@
 }
 
 .tile[data-selected=true]>rect {
-  /* stroke: #16EC1A; */
+  stroke: #59595963;
   /* stroke-width: 0.5px; */
-  fill: #16EC1A;
-  /* filter: hue-rotate(90deg) invert(1); */
+  /* fill: #16EC1A; */
+  fill: #EEEEEE50;
+  /* fill: transparent; */
+  filter: hue-rotate(167deg);
 }
 
 @keyframes yellowToOriginal {
