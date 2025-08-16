@@ -50,7 +50,8 @@ export class SVGCanvas extends EventTarget {
     
     // Uncomment to enable viewboc pan
     // this.panAction$.subscribe()
-    getPanZoom(this.dom)
+    getPanZoom(this.dom);
+    
     this.clickDOM$ = fromEvent(this.#self, 'click')
       .pipe(
         tap(e => {

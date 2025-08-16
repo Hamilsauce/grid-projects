@@ -56,7 +56,11 @@ const defaultContextMenuItems = [
 }, ];
 
 export class ContextMenu extends CanvasObject {
-  #menuItems = [];
+  #menuItems = {
+    primary: [],
+    secondary: [],
+  };
+  
   #menuLists = {
     primary: null,
     secondary: null,
@@ -71,7 +75,21 @@ export class ContextMenu extends CanvasObject {
       secondary: this.getEl('.context-menu-list.secondary'),
     }
     
-    
+    this.#menuItems = menuItems.reduce((items, {
+      type,
+      value,
+      textContent,
+      list,
+    }, i) => {
+      const el = document.createElement('li');
+      
+      el.dataset.value = value;
+      el.dataset.type = type;
+      el.textContent = textContent;
+      items[list].append(el);
+      
+      return items;
+    }, this.#menuItems);
   };
   
   onMenuClick(e) {
