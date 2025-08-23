@@ -20,6 +20,12 @@ export class SVGCanvas extends EventTarget {
     
     this.surfaceLayer = this.dom.querySelector('#surface-layer');
     
+    this.viewport = this.dom.querySelector('#viewport');
+    // console.warn('  this.viewport ',   this.viewport.transform )
+    this.minimap = this.dom.querySelector('#minimap');
+    
+    this.minimapViewport = this.dom.querySelector('#minimap-viewport');
+    
     this.#surface = this.surfaceLayer.querySelector('#surface');
     
     this.layers = {
@@ -52,13 +58,30 @@ export class SVGCanvas extends EventTarget {
     // this.panAction$.subscribe()
     getPanZoom(this.dom);
     
-    this.clickDOM$ = fromEvent(this.#self, 'click')
-      .pipe(
-        tap(e => {
-          e.preventDefault();
-          e.stopPropagation();
-        }),
-      );
+    this.clickDOM$ = fromEvent(this.#self, 'click').pipe(
+      tap(e => {
+        e.preventDefault();
+        e.stopPropagation();
+      }),
+    );
+    
+    this.pointerMove$ = fromEvent(this.#self, 'pointermove').pipe(
+      tap(e => {
+        // e.preventDefault();
+        // e.stopPropagation();
+        const vpTransform = this.viewport.transform.baseVal
+        const matrix = vpTransform.getItem(0).matrix;
+        
+        const transformFromMatrix = vpTransform.createSVGTransformFromMatrix(matrix)
+        const minimapTransform = this.minimapViewport.transform.baseVal
+        // minimapTransform.clear()
+        minimapTransform.initialize(transformFromMatrix)
+        
+        // console.warn('transformFromMatrix', transformFromMatrix)
+      }),
+    );
+    this.pointerMove$.subscribe()
+    
     
     this.eventEmits$ = this.clickDOM$
       .pipe(
@@ -94,7 +117,7 @@ export class SVGCanvas extends EventTarget {
   
   get viewBox() { return this.#self.viewBox.baseVal }
   
-  get viewport() { return this.dom.getBoundingClientRect(); }
+  // get viewport() { return this.dom.getBoundingClientRect(); }
   
   useTemplate(templateName, options = {}) {
     const el = this.#self.querySelector(`[data-template="${templateName}"]`).cloneNode(true);
