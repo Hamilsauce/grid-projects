@@ -52,8 +52,7 @@ body {
   fill: transparent;
   stroke: #FFFFFF80;
   stroke-width: 0.2;
-  filter: 
-  drop-shadow(0 0px 1.5px #2F2F2F65);
+  filter:   drop-shadow(0 0px 1.5px #2F2F2F65);
 }
 
 #context-menu[data-show=false] {

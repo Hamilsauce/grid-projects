@@ -14,7 +14,7 @@
 </head>
 
 <body>
-
+  
   <div class="gradient" id="app-shell">
     <header id="app-header">
       <div id="app-header-left"></div>
@@ -25,11 +25,11 @@
     </header>
     <div class="gradient" id="app">
       <section id="app-body">
-
+        
         <div class="body-content container">
           List of projects:
         </div>
-
+        
         <div class="container">
           <ul>
             <li>
@@ -47,16 +47,17 @@
     </div>
     <footer id="app-footer">
       <a href="https://github.com/Hamilsauce">Back to Github</a>
-
+      
     </footer>
   </div>
-
+  <script src="./script.js"></script>
+  
   <template id="tile-template">
     <div class="tile" data-symbol="#" data-tile-type-id="0" data-tile-type-name="barrier" data-id="ctuv84hulg8skl8vc6au" data-has-character="false" data-row="0" data-column="0">
       <div class="tile-content">FUCKONG TILE</div>
     </div>
   </template>
-
+  
   <template id="grid-slot-template">
     <!-- <style>
       .grid-slot {
@@ -80,7 +81,7 @@
       <div class="grid-slot-content"></div>
     </div>
   </template>
-
+  
   <template id="grid-template">
     <style>
       .grid {
@@ -89,39 +90,39 @@
         background: #191A2015;
         overflow: scroll;
       }
-
+      
       .tile {
         background: #FFFFFF;
         border: 0.25px solid #37373750;
         transition: 0.15s ease;
       }
-
+      
       .tile[data-selected=true] {
         background: #FFEE05;
         border: 0.25px solid #68686800;
       }
-
+      
       .tile[data-highlight=true] {
         background: #FFF811;
         border: 0.25px solid #68686800;
       }
-
+      
       .tile[data-selected=true].left {
         border-left: 2px solid #FFFFFF;
       }
-
+      
       .tile[data-selected=true].right {
         border-right: 2px solid #FFFFFF;
       }
-
+      
       .tile[data-selected=true].top {
         border-top: 2px solid #FFFFFF;
       }
-
+      
       .tile[data-selected=true].bottom {
         border-bottom: 2px solid #FFFFFF;
       }
-
+      
       .tile[data-active=true][data-selected=true] {
         background: #FFA808;
       }

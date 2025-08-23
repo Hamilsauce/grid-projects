@@ -73,7 +73,7 @@ export class ContextMenu extends CanvasObject {
     this.#menuLists = {
       primary: this.getEl('.context-menu-list.primary'),
       secondary: this.getEl('.context-menu-list.secondary'),
-    }
+    };
     
     this.#menuItems = menuItems.reduce((items, {
       type,
@@ -90,18 +90,38 @@ export class ContextMenu extends CanvasObject {
       
       return items;
     }, this.#menuItems);
+    
+    
+    
+  
+    menuItems.forEach(({
+      type,
+      value,
+      textContent,
+      list,
+    }, i) => {
+      const el = document.createElement('li');
+      Object.assign(el, {
+        dataset: { value, type},
+        text
+      })
+      el.dataset.value = value;
+      el.dataset.type = type;
+      el.textContent = textContent;
+      this.#menuLists[list].append(el);
+    });
   };
   
   onMenuClick(e) {
-    const value = e.target.dataset.value
-    this.dispatchEvent('')
+    const value = e.target.dataset.value;
+    this.dispatchEvent('');
   }
   
   toggleSecondaryMenu() {}
   
-  get prop() { return this.#prop };
+  get prop() { return this.#prop; };
   
-  get prop() { return this.#prop };
+  get prop() { return this.#prop; };
   
-  set prop(newValue) { this._prop = newValue };
+  set prop(newValue) { this._prop = newValue; };
 }

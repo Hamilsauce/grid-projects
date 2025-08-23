@@ -1,13 +1,24 @@
-import ham from 'https://hamilsauce.github.io/hamhelper/hamhelper1.0.0.js';
-// import {Cang} from './dfs-maze/canvas/CanvasObject.js';
-const { template, utils } = ham;
-const slot = document.querySelector('grid-slot');
-console.log(slot);
-setTimeout(() => {
-  slot.setAttribute('x', 'fick')
-  slot.x = 'fuck'
+const id = 'stupid-id'
+const className = 'stupid-classname'
+const textContent = 'FUK HELL'
 
-  slot.insertContent(template('tile'))
-  console.log('slot.contentElement', slot.contentElement)
-  console.log(' ', );
-}, 1000)
+const app = document.querySelector('#app');
+const appBody = app.querySelector('#app-body')
+const containers = document.querySelectorAll('.container')
+
+const el = document.createElement('div');
+
+
+
+Object.assign(el, {
+  id,
+  className,
+  style: {
+    background: 'pink',
+    color: 'white',
+  },
+  textContent,
+})
+
+appBody.innerHTML = ''
+appBody.append(el);

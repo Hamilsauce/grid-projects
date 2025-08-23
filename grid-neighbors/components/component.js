@@ -4,7 +4,7 @@ const { template } = ham;
 
 export class Component extends EventEmitter {
   #self;
-  
+
   constructor(name) {
     super();
     if (!name) throw new Error('No name passed to constructor for ', this.constructor.name);
