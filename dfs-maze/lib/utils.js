@@ -2,11 +2,18 @@ export const copyTextToClipboard = async (text) => {
   await navigator.clipboard.writeText(text);
 };
 
-export const dispatchPointerEvent = (target, type = 'click') => {
-  const ev = new PointerEvent(type, {
+const pointerEventSet = new Set(['pointerdown', 'pointermove', 'pointerup'])
+
+export const dispatchPointerEvent = (target, type, options = {}) => {
+  target = target ?? document;
+  type = pointerEventSet.has(type) ? type : 'pointermove';
+  
+  Object.assign({
     view: window,
     bubbles: true,
     cancelable: true
-  });
+  }, (options ?? {}));
+  
+  const ev = new PointerEvent(type, options);
   target.dispatchEvent(ev);
 };

@@ -23,7 +23,6 @@ export class SVGCanvas extends EventTarget {
     this.viewport = this.dom.querySelector('#viewport');
     // console.warn('  this.viewport ',   this.viewport.transform )
     this.minimap = this.dom.querySelector('#minimap');
-    
     this.minimapViewport = this.dom.querySelector('#minimap-viewport');
     
     this.#surface = this.surfaceLayer.querySelector('#surface');
@@ -47,15 +46,6 @@ export class SVGCanvas extends EventTarget {
       console.warn('PPOP.#blurContextMenu', this.#isContextMenuActive);
     });
     
-    this.panAction$ = addPanAction(this.dom, (vb) => {
-      // if (this.isContextMenuActive) {
-      //   return
-      // }
-      this.panViewport(vb)
-    })
-    
-    // Uncomment to enable viewboc pan
-    // this.panAction$.subscribe()
     getPanZoom(this.dom);
     
     this.clickDOM$ = fromEvent(this.#self, 'click').pipe(
@@ -65,21 +55,56 @@ export class SVGCanvas extends EventTarget {
       }),
     );
     
-    this.pointerMove$ = fromEvent(this.#self, 'pointermove').pipe(
-      tap(e => {
-        // e.preventDefault();
-        // e.stopPropagation();
-        const vpTransform = this.viewport.transform.baseVal
-        const matrix = vpTransform.getItem(0).matrix;
+    this.pointerMove$ = fromEvent(this.#self, 'pointermove').pipe(tap(e => {
+      const vpTransform = this.viewport.transform.baseVal
+      const matrix = vpTransform.getItem(0).matrix;
+      const transformFromMatrix = vpTransform.createSVGTransformFromMatrix(matrix)
+      
+      const minimapVPTransform = this.minimapViewport.transform.baseVal
+      console.warn('minimapVPTransform', minimapVPTransform)
+      
+      const mmvpMatrix = minimapVPTransform.getItem(0).matrix;
+      const transformFromMMVPMatrix = vpTransform.createSVGTransformFromMatrix(mmvpMatrix)
+      
+      const minimapBB = this.minimap.getBoundingClientRect();
+      const minimapViewportBB = this.minimapViewport.getBoundingClientRect();
+      // console.table('minimapBB', 'minimapViewportBB', minimapBB, minimapViewportBB)
+      const mmBB = {
+        left: minimapBB.x,
+        top: minimapBB.y,
+        // width: minimapBB.width,
+        // height: minimapBB.height,
+        right: minimapBB.x + minimapBB.width,
+        bottom: minimapBB.y + minimapBB.height,
+      }
+      
+      const mmvpBB = {
+        left: minimapViewportBB.x,
+        top: minimapViewportBB.y,
+        // width: minimapViewportBB.width,
+        // height: minimapViewportBB.height,
+        right: minimapViewportBB.x + minimapViewportBB.width,
+        bottom: minimapViewportBB.y + minimapViewportBB.height,
         
-        const transformFromMatrix = vpTransform.createSVGTransformFromMatrix(matrix)
-        const minimapTransform = this.minimapViewport.transform.baseVal
-        // minimapTransform.clear()
-        minimapTransform.initialize(transformFromMatrix)
-        
-        // console.warn('transformFromMatrix', transformFromMatrix)
-      }),
-    );
+      }
+      
+      // console.table({ mmBB, mmvpBB })
+      
+      const isVPRectInMinimap =
+        mmvpBB.left >= mmBB.left &&
+        mmvpBB.top >= mmBB.top &&
+        mmvpBB.right <= mmBB.right &&
+        mmvpBB.bottom <= mmBB.bottom;
+      
+      console.warn('isVPRectInMinimap', isVPRectInMinimap)
+      
+      if (isVPRectInMinimap) {
+        minimapVPTransform.initialize(transformFromMatrix)
+      }
+      else {
+        minimapVPTransform.initialize(transformFromMatrix); // transformFromMMVPMatrix)
+      }
+    }), );
     this.pointerMove$.subscribe()
     
     

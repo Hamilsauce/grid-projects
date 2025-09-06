@@ -119,8 +119,6 @@ const canvasEl = document.querySelector('#canvas');
 
 const svgCanvas = new SVGCanvas(canvasEl);
 
-// const drawer = new Drawer('#app')
-
 const scene = svgCanvas.dom.querySelector('#scene');
 const tileLayer = scene.querySelector('#tile-layer');
 const objectLayer = scene.querySelector('#object-layer');
@@ -215,23 +213,23 @@ pointerup$.pipe(
   tap(x => pageScrolling.enable()),
 ).subscribe();
 
-graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
-  tileLayer.append(
-    svgCanvas.createRect({
-      width: 1,
-      height: 1,
-      classList: ['tile', 'gradient'],
-      dataset: {
-        tileType,
-        x: x,
-        y: y,
-        current: false,
-        active: false,
-        isPathNode: false,
-        fillEffect: 'gradient'
-      },
-    }))
-});
+// graph.nodes.forEach(({ x, y, tileType }, rowNumber) => {
+//   tileLayer.append(
+//     svgCanvas.createRect({
+//       width: 1,
+//       height: 1,
+//       classList: ['tile', 'gradient'],
+//       dataset: {
+//         tileType,
+//         x: x,
+//         y: y,
+//         current: false,
+//         active: false,
+//         isPathNode: false,
+//         fillEffect: 'gradient'
+//       },
+//     }))
+// });
 
 let lastX
 let lastY
@@ -248,15 +246,15 @@ setTimeout(() => {
   
   goalTile = tileLayer.querySelector('[data-tile-type="goal"]');
   
-  svgCanvas.surface.setAttribute('width', lastX+1)
-  svgCanvas.surface.setAttribute('height', lastY+1)
+  svgCanvas.surface.setAttribute('width', lastX + 1)
+  svgCanvas.surface.setAttribute('height', lastY + 1)
 }, 900)
 
 
-const oppositeDirMap = new TwoWayMap([
-  ['up', 'down'],
-  ['left', 'right'],
-]);
+// const oppositeDirMap = new TwoWayMap([
+//   ['up', 'down'],
+//   ['left', 'right'],
+// ]);
 
 svgCanvas.addEventListener('click', async ({ detail }) => {
   if (isMoving) return;
