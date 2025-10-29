@@ -248,6 +248,12 @@ setTimeout(() => {
   
   svgCanvas.surface.setAttribute('width', lastX + 1)
   svgCanvas.surface.setAttribute('height', lastY + 1)
+  
+ const centerNode =  graph.getSpiral()
+ console.warn('graph', graph)
+ console.warn('centerNode', centerNode)
+let tile = svgCanvas.querySelector(`.tile[data-x="${centerNode.x}"][data-y="${centerNode.y}"]`);
+tile.dataset.active = true
 }, 900)
 
 

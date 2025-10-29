@@ -61,7 +61,6 @@ export class SVGCanvas extends EventTarget {
       const transformFromMatrix = vpTransform.createSVGTransformFromMatrix(matrix)
       
       const minimapVPTransform = this.minimapViewport.transform.baseVal
-      console.warn('minimapVPTransform', minimapVPTransform)
       
       const mmvpMatrix = minimapVPTransform.getItem(0).matrix;
       const transformFromMMVPMatrix = vpTransform.createSVGTransformFromMatrix(mmvpMatrix)
@@ -96,7 +95,6 @@ export class SVGCanvas extends EventTarget {
         mmvpBB.right <= mmBB.right &&
         mmvpBB.bottom <= mmBB.bottom;
       
-      console.warn('isVPRectInMinimap', isVPRectInMinimap)
       
       if (isVPRectInMinimap) {
         minimapVPTransform.initialize(transformFromMatrix)

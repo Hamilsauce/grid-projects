@@ -90,10 +90,7 @@ export class ContextMenu extends CanvasObject {
       
       return items;
     }, this.#menuItems);
-    
-    
-    
-  
+
     menuItems.forEach(({
       type,
       value,
@@ -102,7 +99,7 @@ export class ContextMenu extends CanvasObject {
     }, i) => {
       const el = document.createElement('li');
       Object.assign(el, {
-        dataset: { value, type},
+        dataset: { value, type },
         text
       })
       el.dataset.value = value;

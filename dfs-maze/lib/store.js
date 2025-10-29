@@ -56,7 +56,6 @@ export class GraphNode {
     this.#tileType = type
   }
   
-  
   get linkedNodeAddress() { return this.#target ? [this.#target.x, this.#target.y].join('_') : null; }
   
   get target() { return this.#target }
@@ -76,7 +75,6 @@ export class GraphNode {
     this.#linkedNodeAddress = null;
     return address
   }
-  
   
   toJSON() {
     return {
@@ -237,7 +235,6 @@ export class Graph {
       y: node.y + y,
     });
     
-    
     if (!n || !n.isTraversable) return null;
     
     return n;
@@ -293,6 +290,18 @@ export class Graph {
     }
     
     return null; // no path found
+  }
+  
+  getSpiral() {
+    const targetX = this.width / 2;
+    const targetY = this.height / 2;
+    
+    const centerNode = this.getNodeAtPoint({
+      x: targetX,
+      y: targetY
+    })
+    
+    return centerNode
   }
   
   
