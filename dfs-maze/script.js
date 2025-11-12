@@ -249,11 +249,11 @@ setTimeout(() => {
   svgCanvas.surface.setAttribute('width', lastX + 1)
   svgCanvas.surface.setAttribute('height', lastY + 1)
   
- const centerNode =  graph.getSpiral()
- console.warn('graph', graph)
- console.warn('centerNode', centerNode)
-let tile = svgCanvas.querySelector(`.tile[data-x="${centerNode.x}"][data-y="${centerNode.y}"]`);
-tile.dataset.active = true
+  const centerNode = graph.getSpiral()
+  console.warn('graph', graph)
+  console.warn('centerNode', centerNode)
+  let tile = svgCanvas.querySelector(`.tile[data-x="${centerNode.x}"][data-y="${centerNode.y}"]`);
+  tile.dataset.active = true
 }, 900)
 
 
@@ -461,8 +461,11 @@ svgCanvas.layers.tile.addEventListener('contextmenu', e => {
   
   const targ = e.target.closest('.tile');
   const tileType = targ.dataset.tileType;
+  const shouldShowSecondaryList = tileType === 'teleport'
+  
   const listEl = contextMenu.querySelector('.context-menu-list.primary');
   const listEl2 = contextMenu.querySelector('.context-menu-list.secondary');
+  listEl2.style.display = shouldShowSecondaryList ? null : 'none'
   
   if (tileType === 'teleport') {
     const selectedNode = graph.getNodeAtPoint({
@@ -481,8 +484,8 @@ svgCanvas.layers.tile.addEventListener('contextmenu', e => {
     const htmlListContainer = contextMenu.querySelector('.context-menu-container');
     const svgListContainer = contextMenu.firstElementChild;
     const htmlHeight = htmlListContainer.getBoundingClientRect().height
-    
-    svgListContainer.setAttribute('height', isNaN(htmlHeight) ? 150 : htmlHeight)
+    htmlListContainer.style.height = '100%'
+    // svgListContainer.setAttribute('height', isNaN(htmlHeight) ? 0 : htmlHeight)
   } else {}
   
   targ.dataset.selected = true;
