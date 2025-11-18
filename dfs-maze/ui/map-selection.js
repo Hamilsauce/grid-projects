@@ -11,12 +11,12 @@ const { sleep, template, utils, download, TwoWayMap } = ham;
 const renderMap = (mapData, svgCanvas, graph, actor1) => {
   graph.fromMap(mapData);
   
-  svgCanvas.setViewBox({
-    x: 0,
-    y: 0,
-    width: graph.width,
-    height: graph.height
-  });
+  // svgCanvas.setViewBox({
+  //   x: 0,
+  //   y: 0,
+  //   width: graph.width,
+  //   height: graph.height
+  // });
   
   svgCanvas.layers.tile.innerHTML = '';
   

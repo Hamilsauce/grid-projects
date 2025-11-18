@@ -8,6 +8,7 @@
 }
 
 #minimap-viewport {
+  display: none;
   fill: transparent;
   stroke: #C63697;
   filter: drop-shadow(0 0px 1px #2F2F2F65);

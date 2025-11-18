@@ -48,11 +48,19 @@ body {
   /* min-height: 100vh; */
 }
 
+
+#map-details {
+  fill: #E2E2E2;
+  stroke: #FFFFFF80;
+  stroke-width: 0.0;
+  filter: drop-shadow(0 0px 1.5px #2F2F2F65);
+}
+
 #surface {
   fill: transparent;
   stroke: #FFFFFF80;
   stroke-width: 0.2;
-  filter:   drop-shadow(0 0px 1.5px #2F2F2F65);
+  filter: drop-shadow(0 0px 1.5px #2F2F2F65);
 }
 
 #context-menu[data-show=false] {
@@ -69,7 +77,7 @@ body {
   flex-direction: column;
   gap: 2px;
   height: 100%;
-
+  
 }
 
 #context-menu .context-menu-list {

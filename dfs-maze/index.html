@@ -63,13 +63,15 @@
         <div id="app-state-display"></div>
       </div>
       <div id="app-footer-top">
-        <label for="map-input">Pick Map</label>
-        <select name="map-input" id="map-input">
-          <option value="MAP_9X15_1">MAP_9X15_1</option>
-          <option value="BLANK_MAP_9X15_1">BLANK_MAP_9X15_1</option>
-          <option value="suk">suk</option>
-          <option value="BIG_ASS_MAP">BIG_ASS_MAP</option>
-        </select>
+        <div class="container">
+          <label for="map-input">Pick Map</label>
+          <select name="map-input" id="map-input">
+            <option value="MAP_9X15_1">MAP_9X15_1</option>
+            <option value="BLANK_MAP_9X15_1">BLANK_MAP_9X15_1</option>
+            <option value="suk">suk</option>
+            <option value="BIG_ASS_MAP">BIG_ASS_MAP</option>
+          </select>
+        </div>
         <div class="container">
           <button id="new-map" class="file-button" type="button">New</button>
           <button id="save-map" class="file-button" type="button">Save</button>
@@ -81,7 +83,7 @@
   <template data-component="app-body">
     <section id="app-body">
       
-      <svg id="canvas" class="gradient" width="412" _height="681" viewBox="-0 -0 9 15" preserveAspectRatio="xMidYMid meet" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
+      <svg id="canvas" class="gradient" width="412" height="681" viewBox="-0 -0 20 25" preserveAspectRatio="xMidYMid meet" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <marker id="edge-line-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
             <path d="M 0 0 L 10 5 L 0 10 z" fill="black" />
@@ -113,7 +115,8 @@
           
         </defs>
         <g id="viewport" transform="matrix(1 0 0 1 0 0)">
-          
+       <rect id="map-details" x="0" y="0" rx="0" ry="0" width="3" height="1" transform="translate(6,-1) rotate(0) scale(1)"></rect>
+   
           <g id="scene" transform="translate(0,0) rotate(0) scale(1)">
             <g id="surface-layer" transform="translate(-0,-0) rotate(0) scale(1)">
               <rect id="surface" class="gradient" x="0" y="0" rx="0" ry="0" width="10" height="15"></rect>
@@ -124,17 +127,17 @@
             <g id="object-layer" transform="translate(0.5,0.5) rotate(0) scale(1)"></g>
           </g>
         </g>
-        <g id="minimap" data-x="0" data-y="0" transform="translate(13, 17) rotate(0) scale(0.3)">
+        <g id="minimap" data-x="0" data-y="0" transform="translate(14, 22) rotate(0) scale(0.3)">
           <rect id="minimap-surface" x="0" y="0" rx="0" ry="0" width="19" height="22"></rect>
           <use href="#scene"></use>
-          <rect id="minimap-viewport" x="0" y="0" rx="0" ry="0" width="19" height="22" transform="translate(1,1) rotate(0) scale(1)"></rect>
+          <rect id="minimap-viewport" x="0" y="0" rx="0" ry="0" width="21" height="22" transform="translate(1,1) rotate(0) scale(1)"></rect>
         </g>
         
       </svg>
     </section>
   </template>
-  <template data-component="app-footer">
   
+  <template data-component="app-footer">
     <footer id="app-footer">
       
       <div v-if="showToolbar" id="app-footer-top">
